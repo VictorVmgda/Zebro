@@ -1,0 +1,580 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui" xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:html="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<ui:composition template="_template.xhtml">
+
+	<ui:define name="tituloPag">
+	    Zebro - Encontre outras pessoas
+	</ui:define>
+
+	<ui:param name="pessoas" value="active" />
+	<ui:param name="count" value="#{buscaBean.count}" />
+	<ui:param name="0" value="active" />
+	<ui:param name="talkParam" value="true" />
+	<ui:param name="friendsBean" value="#{buscaBean.lastFriends}" />
+	<ui:param name="setUsuarioChat"
+		value="#{buscaBean.setUsuarioChat(user)}" />
+
+	<ui:define name="conteudo">
+		<script>
+			
+		var chat = new WebSocket("wss://zsocket.herokuapp.com");
+		
+		chat.onopen = function (event){
+			console.log(event);
+			var mensagem = {
+					'type': 'enter',
+					'idusuario':'#{buscaBean.u.idusuario}'
+				}
+			console.log(mensagem);
+			chat.send(JSON.stringify(mensagem));
+			setInterval(function() {
+				chat.send(JSON.stringify("{ping:'ping'}"));
+			},20000)
+		}
+	
+		chat.onmessage = function (message){
+			var jsonData = JSON.parse(message.data);
+			console.log(jsonData);
+			
+			switch(jsonData.type){
+				case "mensagem":
+					
+					var id;
+					if (jsonData.fkusuario == #{buscaBean.u.idusuario}) {
+						id = jsonData.idusuario;
+					} else {
+						id = jsonData.fkusuario;
+					}
+					
+					changeOrderList([{name: 'data', value: id}]);
+					
+					insertIntoChatbox(jsonData);	
+					var messageArea = $('.listChatBox');
+					messageArea.scrollTop(messageArea.prop('scrollHeight'));
+					break;
+			
+				case "sendRequest":
+					plusCount();
+					PF('messageCame').renderMessage({
+						'summary': 'Solicitação Recebida',
+						'severity': 'info'
+					});	
+					break;
+				
+				case "acceptRequest":
+					PF('messageCame').renderMessage({
+						'summary': jsonData.mensagem,
+						'severity': 'info'
+					});
+					break;
+			}
+			
+		}
+		
+		chat.onclose = function (event){
+			console.log("Closed Chat" + event);
+		}
+		
+		function envia(message){
+			chat.send(message);
+		}
+		
+		function showChatbox(){
+			$("#chatbox").collapse('show');	
+			$('.textMessage').focus();
+		}
+		
+		function hideCollapse(){
+			console.log("Escondendo collapse")
+			$("#chatbox").collapse('hide');
+		}
+		
+		$(function (){
+			hideCollapse();
+		})
+		
+	</script>
+		<p:growl widgetVar="messageCame" life="3000" id="growl" />
+		<h:panelGroup styleClass="ui-g telaRelativa overflow-y-none"
+			layout="block" id="mainContainer" style="overflow-x: hidden">
+
+			<h:form id="manyViewMode" layout="block"
+				styleClass="height100 width100">
+
+				<p:remoteCommand name="changeOrderList" actionListener="#{buscaBean.changeOrderList()}" 
+					update="stackFriends"/>
+				<p:remoteCommand actionListener="#{buscaBean.plusCount()}"
+					name="plusCount" update=":mainContainer @form" />
+				<p:remoteCommand actionListener="#{buscaBean.chatboxFirst()}"
+					name="chatboxFirst" update="stackFriends @form:chatbox:dataListMessages 
+					@form:chatbox:headerChatbox @form:chatbox:scripts" />
+				
+
+				<div class="ui-g-3 height100 noPadding">
+					<div class="d-flex flex-row height100 width100">
+						<h:panelGroup styleClass="dadosUsuarioSelecionado width100"
+							layout="block" id="displayShowPeople">
+							<div
+								class="d-flex flex-column justify-content-around text-center height100">
+
+								<h3 style="margin-bottom: 1rem;" class="d-flex flex-column">
+									<h:outputText
+										value="#{buscaBean.usuario.nome}, #{buscaBean.usuario.idade}" />
+									<span style="font-size: 0.5em;"> <h:outputText
+											value="#{buscaBean.usuario.distance} Km"
+											rendered="#{buscaBean.usuario.distance > 0}" /> <h:outputText
+											value="Menos de um quilometro"
+											rendered="#{buscaBean.usuario.distance == 0}" />
+									</span>
+								</h3>
+
+								<div class="container" data-toggle="modal"
+									data-target="#profileModal" style="cursor: pointer;">
+									<h:graphicImage alt="Foto de Perfil"
+										url="#{buscaBean.usuario.fotousuario}" styleClass="imageView"
+										style="margin: 0 auto;" />
+								</div>
+
+								<h:panelGrid columns="1" cellpadding="4"
+									styleClass="text-left tableInfo">
+
+									<p:outputLabel value="#{buscaBean.usuario.desc}"
+										style="word-wrap: break-word;text-overflow: clips" />
+
+								</h:panelGrid>
+
+								<div class="d-flex flex-row justify-content-around">
+									<p:commandButton styleClass="btn btn-outline-light"
+										update="@form :mainContainer dataGrid" value="Ignorar"
+										action="#{buscaBean.ignoreUser(buscaBean.usuario)}" />
+									<p:commandButton styleClass="btn btn-outline-light"
+										update="@form:peopleView :growl" value="Enviar"
+										action="#{buscaBean.sendRequest(buscaBean.usuario)}"
+										onclick="sendRequest()" />
+								</div>
+
+							</div>
+
+							<div class="modal fade" id="profileModal" tabindex="-1"
+								role="dialog" aria-labelledby="profileModal" aria-hidden="true"
+								style="color: #000;">
+								<div class="modal-dialog" role="document">
+									<div class="modal-content">
+										<div
+											class="modal-header d-flex flex-row justify-content-between align-items-center">
+											<h3 class="modal-title text-center" id="exampleModalLabel">#{buscaBean.usuario.nome},
+												#{buscaBean.usuario.idade}</h3>
+											<div>
+												<span> <h:outputText
+														value="#{buscaBean.usuario.distance} Km"
+														rendered="#{buscaBean.usuario.distance > 0}" /> <h:outputText
+														value="Menos de um quilometro"
+														rendered="#{buscaBean.usuario.distance == 0}" />
+												</span>
+												<button type="button" class="close" data-dismiss="modal"
+													aria-label="Close">
+													<span aria-hidden="true">&times;</span>
+												</button>
+											</div>
+										</div>
+										<div class="modal-body width100 d-flex flex-column">
+
+											<div class="d-flex flex-row ui-g">
+
+												<div class="ui-g-4">
+													<div
+														class="container d-flex flex-column justify-content-around">
+														<p:repeat var="artist" value="#{buscaBean.artists}">
+															<div class="container ui-g align-items-center">
+																<h:graphicImage url="#{artist.getImages()[0].getUrl()}"
+																	styleClass="imageArtist ui-g-3" />
+
+																<h4 class="ui-g-9 text-center">#{artist.name}</h4>
+															</div>
+														</p:repeat>
+													</div>
+												</div>
+
+												<div class="ui-g-4">
+													<div id="photoCarousel"
+														class="carousel slide height100 width100"
+														data-ride="carousel">
+														<ol class="carousel-indicators">
+															<li data-target="#photoCarousel" data-slide-to="0"
+																class="active"></li>
+															<li data-target="#photoCarousel" data-slide-to="1"
+																jsf:rendered="#{buscaBean.usuario.fotosecundaria.isEmpty() == false}"></li>
+															<li data-target="#photoCarousel" data-slide-to="2"
+																jsf:rendered="#{buscaBean.usuario.fototerciaria.isEmpty() == false}"></li>
+															<li data-target="#photoCarousel" data-slide-to="3"
+																jsf:rendered="#{buscaBean.usuario.fotoquaternaria.isEmpty() == false}"></li>
+															<li data-target="#photoCarousel" data-slide-to="4"
+																jsf:rendered="#{buscaBean.usuario.fotoquintenaria.isEmpty() == false}"></li>
+														</ol>
+														<div class="carousel-inner">
+
+															<div class="carousel-item active">
+																<h:graphicImage url="#{buscaBean.usuario.fotousuario}"
+																	styleClass="d-block w-100"
+																	style="border: .1em solid black; height: 380px;" />
+															</div>
+															<div class="carousel-item"
+																jsf:rendered="#{buscaBean.usuario.fotosecundaria.isEmpty() == false}">
+																<h:graphicImage
+																	url="#{buscaBean.usuario.fotosecundaria}"
+																	styleClass="d-block w-100"
+																	style="border: .1em solid black; height: 380px;" />
+															</div>
+															<div class="carousel-item"
+																jsf:rendered="#{buscaBean.usuario.fototerciaria.isEmpty() == false}">
+																<h:graphicImage url="#{buscaBean.usuario.fototerciaria}"
+																	styleClass="d-block w-100"
+																	style="border: .1em solid black; height: 380px;" />
+															</div>
+															<div class="carousel-item"
+																jsf:rendered="#{buscaBean.usuario.fotoquaternaria.isEmpty() == false}">
+																<h:graphicImage
+																	url="#{buscaBean.usuario.fotoquaternaria}"
+																	styleClass="d-block w-100"
+																	style="border: .1em solid black; height: 380px;" />
+															</div>
+															<div class="carousel-item"
+																jsf:rendered="#{buscaBean.usuario.fotoquintenaria.isEmpty() == false}">
+																<h:graphicImage
+																	url="#{buscaBean.usuario.fotoquintenaria}"
+																	styleClass="d-block w-100"
+																	style="border: .1em solid black; height: 380px;" />
+															</div>
+
+															<a class="carousel-control-prev" href="#photoCarousel"
+																role="button" data-slide="prev"> <span
+																class="carousel-control-prev-icon" aria-hidden="true"></span>
+																<span class="sr-only">Previous</span>
+															</a> <a class="carousel-control-next" href="#photoCarousel"
+																role="button" data-slide="next"> <span
+																class="carousel-control-next-icon" aria-hidden="true"></span>
+																<span class="sr-only">Next</span>
+															</a>
+
+														</div>
+
+													</div>
+
+												</div>
+
+												<div class="ui-g-4">
+													<div class="height100 width100 d-flex flex-column">
+														<div class="container text-center">
+															<h4>Música Favorita:</h4>
+															<h:graphicImage
+																url="#{buscaBean.music.album.images[0].url}"
+																styleClass="imageMusic" />
+															<h:panelGroup layout="block" id="play">
+																<button onclick="playMusic()" class="playButton">
+																	<i class="fa fa-play"></i>
+																</button>
+															</h:panelGroup>
+															<h6 style="margin-top: 1rem;">#{buscaBean.music.name}
+																- #{buscaBean.music.artists[0].name}</h6>
+															<div class="text-center">
+																<h6 class="text-center">#{buscaBean.music.album.name}</h6>
+															</div>
+															<audio id="audio"> <source
+																src="#{buscaBean.music.getPreviewUrl()}"
+																type="audio/mp3" id="audiosource" /> </audio>
+															<h:outputScript library="js" name="musicPreview.js" />
+														</div>
+														<div class="container">
+															<hr class="width100" />
+															<h:outputText value="#{buscaBean.usuario.desc}" />
+														</div>
+														<div></div>
+													</div>
+												</div>
+
+											</div>
+
+										</div>
+										<div class="modal-footer">
+											<div data-dismiss="modal">
+												<p:commandButton class="btn btn-outline-dark" value="Enviar"
+													action="#{buscaBean.sendRequest(buscaBean.usuario)}"
+													onclick="sendRequest()" update="@form @form:dataGrid" />
+												<p:commandButton class="btn btn-outline-dark"
+													value="Ignorar" data-dismiss="modal"
+													action="#{buscaBean.ignoreUser(buscaBean.usuario)}"
+													update="@form dataGrid" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<script>
+								function sendRequest() {	
+									
+									var mensagem = {
+										type: 'sendRequest',
+										idusuario: #{buscaBean.u.idusuario},
+										fkusuario: #{buscaBean.usuario.idusuario}
+									}
+									
+									envia(JSON.stringify(mensagem));
+									
+								}
+							
+							</script>
+						</h:panelGroup>
+
+
+					</div>
+				</div>
+
+				<div class="ui-g-9 height100">
+
+					<h:inputHidden id="distance" value="#{buscaBean.distance}" />
+					<h:inputHidden id="txt6" />
+					
+					  <div class="dropdownDistance d-flex flex-row dropleft">
+					  
+						<button type="button" class="btn btn-link" style="color: #FFF;"
+							aria-haspopup="true" aria-expanded="false">
+							<i class="fa fa-arrows-h"></i>
+						</button>
+
+					  	<h:panelGrid columns="1" style="margin-bottom: 10px; margin-left: 10px; ">
+					        <h:outputText id="displayRange" value="Selecione uma distância para busca de pessoas" />
+					        <p:slider for="txt6,distance" maxValue="200" minValue="0"  displayTemplate="Buscando pessoas com até {max} Km de distância" display="displayRange" style="width: 400px" range="true">
+					        	<p:ajax listener="#{buscaBean.onSlideEnd}" event="slideEnd" update="peopleView displayShowPeople"/>
+					        </p:slider>
+					    </h:panelGrid> 	
+					  
+					    
+					  </div>
+					
+					<h:panelGroup layout="block" id="peopleView" styleClass="height100">
+						
+						<p:dataGrid var="u" value="#{buscaBean.usuarios}"
+							widgetVar="dataGridFriends" columns="3" layout="grid" rows="6"
+							paginator="true" paginatorPosition="bottom"
+							emptyMessage="Não foram encontradas pessoas pelos seus gêneros musicais"
+							currentPageReportTemplate="{currentPage}" id="dataGrid"
+							paginatorTemplate="{CurrentPageReport} {PageLinks} {RowsPerPageDropdown} {NextPageLink}">
+
+							<div class="panelPeople">
+								<p:commandLink action="#{buscaBean.setUsuario(u)}"
+									update=":manyViewMode:displayShowPeople" styleClass="card">
+									<h:graphicImage url="#{u.fotousuario}"
+										styleClass="fotoManyView card-img-top" />
+									<div class="card-body">
+										<h4 class="card-text text-center">#{u.principalName}</h4>
+									</div>
+								</p:commandLink>
+							</div>
+						</p:dataGrid>
+					</h:panelGroup>
+					
+					
+					<h:panelGroup id="chatbox" layout="block">
+						<div id="chatbox" class="col-sm-3 col-sm-offset-4 frame chatbox collapse">
+						<h:panelGroup styleClass="text-center headerChatbox" layout="block" id="headerChatbox">
+							<h5>#{buscaBean.usuarioChat.nome}</h5>
+							<button type="button" class="close" onclick="hideCollapse()" aria-label="Close">
+					          <span aria-hidden="true">&times;</span>
+					        </button>
+				        </h:panelGroup>
+						<hr style="background-color: #FFF;" />
+						<h:panelGroup id="dataListMessages" layout="block" style="height: 200px;">
+							<ul class="listChatBox" >
+								<p:dataList value="#{buscaBean.friendsMessage}" var="message"> 
+									<h:panelGroup style="width: 100%;"
+											rendered="#{message.fkusuariosend == buscaBean.usuarioChat.idusuario}">
+										<div class="msj-rta macro">
+												<div class="text text-r">
+													<p>#{message.msgText}</p>
+													<p>
+														<small>#{message.msgData}</small>
+													</p>
+												</div>
+												<div class="avatar"
+													style="padding: 0px 0px 0px 10px !important">
+													<img class="chatboxIcon" style="width: 100%;"
+														src="#{buscaBean.u.fotousuario}" />
+												</div>
+											</div>
+									</h:panelGroup>
+									
+									<h:panelGroup style="width: 100%;"
+											rendered="#{message.fkusuariosend != buscaBean.usuarioChat.idusuario}">
+										<div class="msj macro">
+											<div class="avatar">
+												<img class="chatboxIcon" style="width: 100%;"
+													src="#{buscaBean.usuarioChat.fotousuario}" />
+											</div>
+											<div class="text text-l">
+												<p>#{message.msgText}</p>
+												<p>
+													<small>#{message.msgData}</small>
+												</p>
+
+											</div>
+										</div>
+									</h:panelGroup>
+								
+								</p:dataList>
+						
+							</ul>
+						</h:panelGroup>
+							
+							<div class="formDiv">
+								<div class="msj-rta macro text-center" style="width: 95%;margin-right: .45em;">
+									<div class="text text-r">
+										<p:inputText styleClass="mytext textMessage"
+											placeholder="Digite sua mensagem" onkeypress="enterPress(event)"/>
+									</div>
+
+								</div>
+								<div class="buttonDivChatBox">
+									<p:commandButton icon="fa fa-send" styleClass="btn btn-link" type="submit"
+										onclick="sendMessage()" async="true"/>
+								</div>
+							</div>
+						</div>
+						<h:panelGroup id="scripts">
+							<script>
+							
+								function enterPress(e){
+									var code = (e.keyCode ? e.keyCode : e.which);
+									if(code == 13) { 
+										e.preventDefault();
+									 	sendMessage();
+									}
+								}
+							
+								function sendMessage(){
+									console.log(#{buscaBean.usuarioChat.idusuario})
+									
+									event.preventDefault();
+									var msgCome = document.querySelector(".textMessage");
+									var mensagem = 
+										{
+											msgtexto: msgCome.value,
+											type: "mensagem",
+											fkusuario: '#{buscaBean.usuarioChat.idusuario}',
+											fkcontato: '#{buscaBean.usuarioChat.idcontato}',
+											idusuario: '#{buscaBean.u.idusuario}',
+											nomeusuario: '#{buscaBean.u.nome}'
+										}
+									
+									$.when(envia(JSON.stringify(mensagem)))
+									.done(function() {
+										msgCome.value = "";
+									})
+								}
+								
+								function insertIntoChatbox(jsonData) {
+									
+									var chatbox = $("#chatbox");
+									
+									if(chatbox.is(":visible")){
+										
+										if (#{buscaBean.usuarioChat.idcontato} == jsonData.fkcontato) {
+											
+											if (jsonData.fkusuario == #{buscaBean.u.idusuario}){
+										        
+												control = '<li style="width:95%">' +
+										                        '<div class="msj macro">' +
+										                        '<div class="avatar"><img class="chatboxIcon" style="width:100%;" src="#{buscaBean.usuarioChat.fotousuario}"/></div>' +
+										                            '<div class="text text-l">' +
+										                                '<p>'+ jsonData.msgtexto +'</p>' +
+										                                '<p><small>'+jsonData.msgdata+'</small></p>' +
+										                            '</div>' +
+										                        '</div>' +
+										                        
+										                    '</li>';    
+										                    
+											}else{
+										    
+												control = '<li style="width:95%;">' +
+										                        '<div class="msj-rta macro">' +
+										                            '<div class="text text-r">' +
+										                                '<p>'+jsonData.msgtexto+'</p>' +
+										                                '<p><small>'+jsonData.msgdata+'</small></p>' +
+										                            '</div>' +
+											                        '<div class="avatar" style="padding:0px 0px 0px 10px !important"><img class="chatboxIcon" style="width:100%;" src="#{buscaBean.u.fotousuario}" /></div>' +                                
+									                            '</div>' +
+										                  '</li>';
+		
+										    }
+											
+											var messageArea = $(".listChatBox");
+											messageArea.append(control).scrollTop(messageArea.prop('scrollHeight'));
+										
+										}else{
+											
+											PF('messageCame').renderMessage({
+												'summary': jsonData.nomeusuario + ' diz: ',
+												'detail' : jsonData.msgtexto,
+												'severity': 'info'
+											});
+											
+										}
+									
+									}else{
+										
+										$.when(chatboxFirst()).done(function (){
+											
+											control = '<li style="width:100%">' +
+						                        '<div class="msj macro">' +
+						                        '<div class="avatar"><img class="chatboxIcon" style="width:100%;" src="#{buscaBean.usuarioChat.fotousuario}"/></div>' +
+						                            '<div class="text text-l">' +
+						                                '<p>'+ jsonData.msgtexto +'</p>' +
+						                                '<p><small>'+jsonData.msgdata+'</small></p>' +
+						                            '</div>' +
+						                        '</div>' +
+						                        
+						                    '</li>';
+						                    
+											var messageArea = $(".listChatBox");
+											messageArea.append(control).scrollTop(messageArea.prop('scrollHeight'));
+											setTimeout(function (){
+												showChatbox();												
+											},500)
+										})
+									}
+									
+								}
+							</script>	
+							<h:outputScript library="js" name="scroller.js" />
+						</h:panelGroup>
+							
+					</h:panelGroup>
+				</div>
+		
+				<p:stack icon="/resources/img/icons/messageIcon.png" id="stackFriends">
+					<c:forEach items="#{buscaBean.lastFriends}" var="user" begin="0"
+						end="4">
+						<p:menuitem value="#{user.principalName}" styleClass="menuitem" ajax="true" async="true"
+							onclick="showChatbox() " action="#{buscaBean.setUsuarioChat(user)}" 
+							icon="#{user.fotousuario}" update="@form:chatbox:dataListMessages @form:chatbox:headerChatbox @form:chatbox:scripts"/>
+					</c:forEach>
+				</p:stack>
+
+			</h:form>
+
+		</h:panelGroup>
+		
+		
+
+	</ui:define>
+
+</ui:composition>
+</html>

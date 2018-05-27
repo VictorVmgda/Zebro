@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:jsf="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<ui:composition template="_template.xhtml">
+	<ui:define name="tituloPag"> Zebro - Conversas </ui:define>
+
+	<ui:param name="conversas" value="active"/>
+	<ui:param name="count" value="#{conversasBean.count}"/>
+	
+	<ui:define name="socket">
+		<script>
+
+				var chat = new WebSocket("wss://zsocket.herokuapp.com");
+				
+				chat.onopen = function (event){
+					console.log(event);
+					var mensagem = {
+							'type': 'enter',
+							'idusuario':'#{conversasBean.mainUser.idusuario}'
+						}
+					console.log(mensagem);
+					chat.send(JSON.stringify(mensagem));
+					setInterval(function() {
+						chat.send(JSON.stringify("{ping:'ping'}"));
+					},20000)
+				}
+	
+				chat.onmessage = function (message){
+					var jsonData = JSON.parse(message.data);
+					console.log(jsonData);
+					switch(jsonData.type){
+						case "mensagem":
+							
+							var id;
+							if (jsonData.fkusuario == #{conversasBean.mainUser.idusuario}) {
+								id = jsonData.idusuario;
+							} else {
+								id = jsonData.fkusuario;
+							}
+							
+							console.log(id);
+							changeOrderList([{name: 'data', value: id}]);
+							
+							appendMessage(jsonData);							
+							break;
+						case "sendRequest":
+							plusCount();
+							PF('messageCame').renderMessage({
+								'summary': 'Solicitação Recebida',
+								'severity': 'info'
+							});	
+							break;
+						case "acceptRequest":
+							PF('messageCame').renderMessage({
+								'summary': jsonData.mensagem,
+								'severity': 'info'
+							});
+							break;
+					}
+					
+				}
+				
+				chat.onclose = function (event){
+					console.log("Closed Chat" + event);
+				}
+				
+				function envia(message){
+					chat.send(message);
+				}
+				
+		</script>
+	</ui:define>
+	<ui:define name="conteudo">
+		<p:growl widgetVar="messageCame" life="3000"/>
+			<h:form onsubmit="sendMessage()">
+				<p:remoteCommand name="plusCount" actionListener="#{conversasBean.plusCount()}"/>
+				<p:remoteCommand name="changeOrderList" actionListener="#{conversasBean.changeOrderList}" update="dataTableFriends"/>
+				<div class="ui-g telaRelativa overflow-y-none" >
+				
+					<div class="dataFriendsShow d-flex flex-column ui-g-3">
+					
+						<div class="container d-flex flex-row justify-content-around align-items-center paddingAltura">
+							
+							<h:graphicImage url="#{conversasBean.mainUser.fotousuario}" styleClass="imageIcon"/>
+							
+							<h3 style="color: white;">#{conversasBean.mainUser.nome}</h3>
+							
+						</div>
+						<p:dataTable var="u" value="#{conversasBean.amigos}" emptyMessage="Nenhum amigo encontrado"
+							filteredValue="#{conversasBean.filterFriends}" id="dataTableFriends" 
+							 tableStyleClass="noBorder tableShowFriends" scrollable="true" widgetVar="friendsTable">
+						
+							<p:column filterBy="#{u.nome}" filterMatchMode="contains"  filterStyleClass="form-control" >
+								<div class="d-flex flex-row align-items-center" >
+									<p:commandLink action="#{conversasBean.setSelectedUser(u)}" update="@form:messageArea" styleClass="link">
+							            <h:graphicImage url="#{u.fotousuario}" styleClass="imageIcon"/>
+							            <h:outputText value="#{u.nome}" styleClass="marginLeftColorWhite"/>
+							            <h:inputHidden value="#{u.idusuario}" id="idusuario" />
+									</p:commandLink>
+						            
+					            </div>
+					        </p:column>
+							
+						</p:dataTable>
+						
+					</div>
+				
+					<h:panelGroup class="d-flex flex-column w100 ui-g-9" id="messageArea" layout="block">
+					
+						<div class="selectedTalk">
+							
+							<div class="container d-flex flex-row align-items-center justify-content-around">
+								<div></div>
+								<div class="d-flex flex-row align-items-center" jsf:rendered="#{conversasBean.selectedUser.fotousuario.isEmpty() == false}">
+									<h:graphicImage url="#{conversasBean.selectedUser.fotousuario}" styleClass="imageIcon"/>
+									<h3 style="margin-left: 1rem">#{conversasBean.selectedUser.nome}</h3>
+								</div>
+								<div></div>
+							</div>
+							
+						</div>
+					
+						<div class="messageArea">
+							
+							<div class="message w100">
+								<p:dataList value="#{conversasBean.messages}" var="m" type="definition">
+									<div class="mensagem" id="messages">
+										<h:panelGroup layout="block" rendered="#{m.fkusuariosend != conversasBean.mainUser.idusuario}" 
+													styleClass="mensagemEnviada d-flex flex-column">
+											<span>#{m.msgText}</span>
+											<h:outputText value="#{m.msgData}"/>
+										</h:panelGroup>
+										<h:panelGroup layout="block" rendered="#{m.fkusuariosend == conversasBean.mainUser.idusuario}" 
+													styleClass="mensagemRecebida d-flex flex-column">
+											<span>#{m.msgText}</span>
+											<h:outputText value="#{m.msgData}"/>
+										</h:panelGroup>
+									</div>
+						        	
+						    	</p:dataList>
+						    	
+							</div>
+							
+						</div>
+											
+						<div class="inputArea d-flex flex-row">
+							<p:inputText styleClass="form-control textareaMessage textMessage" placeholder="Escreva aqui sua mensagem..." 
+									value="#{conversasBean.mensagem.msgText}"/>
+							<p:commandButton value="Send" styleClass="btn btn-outline-dark" type="submit" onclick="sendMessage()" update="@form:dataTableFriends"/>
+						</div>
+						
+						<h:outputScript library="js" name="scroller.js"/>
+				    	<script>
+						    		
+									function sendMessage(){
+										var msgCome = document.querySelector(".textMessage");
+										var mensagem = 
+											{
+												msgtexto: msgCome.value,
+												type: "mensagem",
+												fkusuario: '#{conversasBean.selectedUser.idusuario}',
+												fkcontato: '#{conversasBean.selectedUser.idcontato}',
+												idusuario: '#{conversasBean.mainUser.idusuario}',
+												nomeusuario: '#{conversasBean.mainUser.nome}'
+											}
+											console.log(mensagem);
+										
+										$.when(envia(JSON.stringify(mensagem)))
+										.done(function() {
+											msgCome.value = "";
+										})
+									}
+									
+									function appendMessage(jsonData){
+										
+										
+										
+										if (jsonData.fkcontato == #{conversasBean.selectedUser.idcontato}) {										
+											
+											var classe = "";
+											if (jsonData.fkusuario != #{conversasBean.mainUser.idusuario}) {
+												classe = "mensagemEnviada";
+											}else {
+												classe = "mensagemRecebida";
+											}
+											
+											var dt = document.createElement('dt');
+											var div = document.createElement("div");
+											var elemento = document.createElement("div");
+											var texto = document.createElement("span");
+											var data = document.createElement("span");
+											var datalist = document.querySelector(".ui-datalist-data");
+											var messageArea = document.querySelector(".messageArea");
+
+											dt.classList.add('ui-datalist-item');
+											
+											div.classList.add('mensagem');
+											
+											elemento.classList.add(classe);
+											elemento.classList.add('d-flex');
+											elemento.classList.add('flex-column');
+											
+											texto.appendChild(document.createTextNode(jsonData.msgtexto));
+											
+											data.appendChild(document.createTextNode(jsonData.msgdata));
+											
+											elemento.appendChild(texto);
+											elemento.appendChild(data);
+											div.appendChild(elemento);
+											dt.appendChild(div);
+											datalist.appendChild(dt);
+											messageArea.scrollTop = messageArea.scrollHeight-messageArea.clientHeight;
+											
+											console.log(dt,"\n",div,"\n",data,"\n",datalist,"\n",messageArea);
+											
+										}else{
+											PF('messageCame').renderMessage({
+												'summary': 'Mensagem Recebida',
+												'detail': jsonData.message,
+												'severity': 'info'
+											});	
+										}
+										
+									}
+								
+								</script>
+					</h:panelGroup>
+				
+				</div>
+				
+				
+			</h:form>
+				
+	</ui:define>
+
+</ui:composition>
+</html>

@@ -1,0 +1,61 @@
+
+.imageIndex{
+	height: 31em;
+	margin: 2.1rem 0; 
+}
+
+#firstBlock{
+	animation: firstBlock 3s;
+	background-color: #000;
+	color: #FFF;
+}
+
+#animationPass{
+	animation: animationPass 10s infinite; 
+	margin-left: 14rem;
+}
+
+@keyframes firstBlock{
+	
+	0%{
+		background-color: #383838;
+	}
+	50%{
+		background-color: #1e1d1d;
+	}
+	85%{
+		background-color: #000;
+	}
+	100%{
+		color: #FFF;
+	}
+	
+}
+
+@keyframes animationPass{
+	0%{
+		background-image: url("#{request.contextPath}/resources/img/principal.jpg");
+		background-repeat: no-repeat;
+		background-size: contain;
+	}
+	25%{
+		background-image: url("#{request.contextPath}/resources/img/Solic.jpeg");
+		background-repeat: no-repeat;
+		background-size: contain;
+	}
+	50%{
+		background-image: url("#{request.contextPath}/resources/img/Show.jpg");
+		background-repeat: no-repeat;
+		background-size: contain;
+	}
+	75%{
+		background-image: url("#{request.contextPath}/resources/img/perfiltopster.jpg");
+		background-repeat: no-repeat;
+		background-size: contain;
+	}
+	100%{
+		background-image: url("#{request.contextPath}/resources/img/principal.jpg");
+		background-repeat: no-repeat;
+		background-size: contain;
+	}
+}

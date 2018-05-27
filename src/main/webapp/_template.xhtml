@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf/passthrough">
+	
+<h:head>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+	<h:outputStylesheet library="css"       name="principal.css"/>
+	<h:outputStylesheet library="css"       name="bootstrap.css"/>
+	<h:outputStylesheet library="css" 	    name="busca.css"/>
+	<h:outputStylesheet library="css" 	    name="index.css"/>
+	<h:outputStylesheet library="css" 	    name="conversas.css"/>
+	<h:outputStylesheet library="css" 	    name="cadastro.css"/>
+	<h:outputStylesheet library="css" 	    name="chatbox.css"/>
+	<h:outputStylesheet library="css" 	    name="perfil.css" rendered="#{perfil}"/>
+	<ui:insert name="theme"></ui:insert>
+
+	<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+	<h:outputScript library="primefaces" name="jquery/jquery-plugins.js"/>
+	<h:outputScript library="js" 		 name="popper.min.js" />
+	<h:outputScript library="js" 		 name="bootstrap.js"/>
+	<h:outputScript library="js" 		 name="jquery.slimscroll.js"/>
+	
+	<ui:insert name="socket"></ui:insert>
+	
+	<title><ui:insert name="tituloPag"></ui:insert></title>
+	<link rel="icon" href="#{request.contextPath}/resources/img/zebroIcon.ico"/>
+</h:head>
+<h:body>
+
+	<nav class="navbar fixed-top navbar-expand-lg navbar-dark d-flex flex-row justify-content-between">
+		<h2 class="text-center">
+			<h:link value="Zebro" styleClass="navbar-brand projectName" outcome="index.xhtml"/>
+		</h2>
+		<button class="navbar-toggler" type="button" data-toggle="collapse"
+			data-target="#navbarNav" aria-controls="navbarNav"  style="order: 1; margin-right: 1rem;"
+			aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<h:form rendered="#{sessionScope.usuario == null}" style="display: #{cadastro}">
+			<div class="collapse navbar-collapse float-right" id="navbarNav">
+				<ul class="navbar-nav listaOpcoes">
+					<li class="nav-item active"><a class="nav-link" href="index.xhtml#works">Como
+							Funciona?</a></li>
+					<li class="nav-item"><a class="nav-link" href="index.xhtml#app">Baixe
+							nosso aplicativo</a></li>
+				</ul>
+				<button class="btn btn-outline-light" type="button" id="login-button"
+					data-toggle="modal" data-target="#loginModal">Logar</button>
+			</div>
+		</h:form>
+		
+		 
+		<p:outputPanel rendered="#{sessionScope.usuario != null}" autoUpdate="true">
+			<div class="collapse navbar-collapse float-right" id="navbarNav">
+				<ul class="navbar-nav listaOpcoes">
+
+					<li class="nav-item #{pessoas}">
+						<h:link outcome="pretty:busca" styleClass="nav-link" value="Pessoas"/>
+					</li>
+					<li class="nav-item #{conversas}">
+						<h:link outcome="pretty:conversas" styleClass="nav-link" value="Conversas"/>
+					</li>
+					<li class="nav-item #{perfil}">
+						<h:link outcome="pretty:perfil" styleClass="nav-link" value="Perfil"> 
+							<h:panelGroup styleClass="badge-light" rendered="#{count > 0}">#{count}</h:panelGroup>
+						</h:link>
+					</li>
+				</ul>
+	
+				<div class="d-flex flex-row align-items-center" style="margin:0 1rem;">
+					<h:graphicImage url="#{sessionScope.usuario.fotousuario}" styleClass="img-fluid imageIcon" />
+					<div id="nomeUsuarioData">
+					    <h:outputText value="#{sessionScope.usuario.nome}"/>
+					</div>
+				</div>
+			</div>
+		</p:outputPanel>
+	</nav>
+
+	<div class="modal fade" tabindex="-1" role="dialog" id="loginModal" aria-labelledby="loginModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content" style="width: 80vw">
+	      <div class="modal-header text-center">
+	        <h3 class="modal-title text-center width100">Se junte a nós!</h3>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <h:form styleClass="modal-body d-flex flex-row justify-content-around align-items-center">
+	      	<h5>Entre pelo Spotify</h5>
+			<h:commandButton image="resources/img/spotifyBadge.png" id="btnLogin" style="height: 13vh; border: .1em solid black" styleClass="btn btn-light" action="#{authSpotifyBean.authenticateURI()}"/>
+	      </h:form>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="margin-topH">
+	
+		<ui:insert name="conteudo">
+		</ui:insert>
+		
+	</div>
+</h:body>
+</html>

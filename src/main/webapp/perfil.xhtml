@@ -1,0 +1,697 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:html="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<ui:composition template="_template.xhtml">
+	<ui:define name="tituloPag"> Zebro - Perfil </ui:define>
+
+	<ui:param name="perfil" value="active" />
+	<ui:param name="count" value="#{perfilBean.count}" />
+	<ui:param name="talkParam" value="true"/>
+	<ui:param name="perfil" value="true"/>
+	
+	<ui:define name="conteudo">
+
+	<script>
+
+		var chat = new WebSocket("wss://zsocket.herokuapp.com");
+		
+		chat.onopen = function (event){
+			console.log(event);
+			var mensagem = {
+					'type': 'enter',
+					'idusuario':'#{perfilBean.usuario.idusuario}'
+				}
+			console.log(mensagem);
+			chat.send(JSON.stringify(mensagem));
+			setInterval(function() {
+				chat.send(JSON.stringify("{ping:'ping'}"));
+			},20000)
+		}
+	
+		chat.onmessage = function (message){
+			var jsonData = JSON.parse(message.data);
+			console.log(jsonData);
+			switch(jsonData.type){
+				case "mensagem":
+					var id;
+					if (jsonData.fkusuario == #{perfilBean.usuario.idusuario}) {
+						id = jsonData.idusuario;
+					} else {
+						id = jsonData.fkusuario;
+					}
+					
+					changeOrderList([{name: 'data', value: id}]);
+					
+					insertIntoChatbox(jsonData);	
+					
+					var messageArea = $('.listChatBox');
+					messageArea.scrollTop(messageArea.prop('scrollHeight'));
+					
+					break;
+				case "sendRequest":
+					plusCount();
+					PF('messageCame').renderMessage({
+						'summary': 'Solicitação Recebida',
+						'severity': 'info'
+					});	
+					break;
+				case "acceptRequest":
+					PF('messageCame').renderMessage({
+						'summary': jsonData.mensagem,
+						'severity': 'info'
+					});
+					break;
+			}
+			
+		}
+		
+		chat.onclose = function (event){
+			console.log("Closed Chat" + event);
+		}
+		
+		function envia(message){
+			chat.send(message);
+		}
+
+
+		function showChatbox(){
+			$("#chatbox").collapse('show');	
+			$('.textMessage').focus();
+		}
+		
+		function hideCollapse(){
+			console.log("Escondendo collapse")
+			$("#chatbox").collapse('hide');
+		}
+		
+		$(function (){
+			hideCollapse();
+		})
+		
+		
+	</script>
+	
+	<h:outputStylesheet library="bootstrap" name="theme.css"/>
+	
+	<h:form styleClass="ui-g telaRelativa" enctype="multipart/form-data">
+		<p:growl widgetVar="messageCame" life="3000"/>
+		<p:remoteCommand name="plusCount" actionListener="#{perfilBean.plusCount()}" update="@form"/>
+		<p:remoteCommand actionListener="#{perfilBean.chatboxFirst()}"
+					name="chatboxFirst" update="stackFriends @form:chatbox:dataListMessages 
+					@form:chatbox:headerChatbox @form:chatbox:scripts" />
+		<p:remoteCommand name="changeOrderList" actionListener="#{perfilBean.changeOrderList()}" 
+					update="stackFriends"/>
+		
+		<div class="blocoPerfil ui-g-3 ui-md-3 d-flex flex-column justify-content-around">
+			<div class="text-center container d-flex flex-column">
+
+				<h2>#{perfilBean.usuario.nome}</h2>
+				<p:outputLabel for="uploadPrimaryPhoto" style="cursor: pointer">
+					<h:graphicImage url="#{perfilBean.usuario.fotousuario}"
+						styleClass="imageView" />
+				</p:outputLabel>
+			</div>
+
+			<p:selectBooleanButton value="#{perfilBean.updateImages}" onLabel="Fotos" offLabel="Perfil" style="width:60px; position: absolute;">
+	            <p:ajax update="opcoes"/>
+	        </p:selectBooleanButton>
+
+			<h:panelGroup styleClass="opcoes" id="opcoes" layout="block">
+			
+				<h:panelGroup class="container d-flex flex-column justify-content-around" layout="block" rendered="#{perfilBean.updateImages == true}">
+					<div class="d-flex flex-row justify-content-around container">
+						<button jsf:styleClass="custom btnOpcao buttonWhite" 
+								data-toggle="tooltip" jsf:process="@this" data-placement="top"
+								title="Dados de Usuário"
+								jsf:action="#{perfilBean.setWanderlei(true)}" jsf:update="dataUser">
+							<i class="fa fa-user fa-3x"></i>
+						</button>
+						<button jsf:styleClass="btnOpcao buttonBlack reajusteIcon"
+								jsf:process="@this" style="color: #FFF" jsf:update="dataUser"
+								title="Gerenciamento de Amizades"
+								jsf:action="#{perfilBean.setWanderlei(false)}" >
+							<i class="fa fa-users fa-3x"></i>
+						</button>
+					</div>
+
+					<div class="d-flex flex-row justify-content-around container"
+						style="margin-top: 1.5rem;">
+						<button jsf:styleClass="btnOpcao buttonBlack reajusteIcon"
+							title="Termos de Uso" style="color: #FFF">
+							<i class="fa fa-book fa-3x"></i>
+						</button>
+						<button jsf:styleClass="btnOpcao buttonWhite"
+							title="Sair/Deslogar" jsf:action="#{perfilBean.logoff()}">
+							<i class="fa fa-sign-out fa-3x"></i>
+						</button>
+					</div>
+				</h:panelGroup>
+				
+				<h:panelGrid columns="2" columnClasses="ui-g-6,ui-g-6" rowClasses="ui-g" styleClass="width100"
+						id="labelFotos" rendered="#{perfilBean.updateImages == false}">
+						
+					<p:outputLabel styleClass="photoUploadLabel photoLabelSec float-right" value="+" for="@form:dataUser:uploadSecondaryPhoto" 
+						style="background-image: url(#{perfilBean.usuario.fotosecundaria});" id="secundaryP">
+						<p:contextMenu for="secundaryP" styleClass="contextMenu">
+							<p:menuitem value="Apagar"  update="@form" actionListener="#{perfilBean.removePhoto(0)}" onclick="removeSec()"/>
+						</p:contextMenu>
+					</p:outputLabel>
+					
+					<p:outputLabel styleClass="photoUploadLabel photoLabelTer float-right" value="+" for="@form:dataUser:uploadTerciaryPhoto"
+						style="background-image: url(#{perfilBean.usuario.fototerciaria}); background-size:cover;" id="terciaryP">
+						
+						<p:contextMenu for="terciaryP" styleClass="contextMenu">
+							<p:menuitem value="Apagar" actionListener="#{perfilBean.removePhoto(1)}" onclick="removeTer()" update="@form"/>
+						</p:contextMenu>
+					</p:outputLabel>
+					
+					<p:outputLabel styleClass="photoUploadLabel photoLabelQuat float-right" value="+" for="@form:dataUser:uploadQuaternaryPhoto"
+						style="background-image: url(#{perfilBean.usuario.fotoquaternaria})" id="quatP">
+						
+						<p:contextMenu for="quatP" styleClass="contextMenu">
+							<p:menuitem value="Apagar" actionListener="#{perfilBean.removePhoto(2)}" onclick="removeQua()" update="@form"/>
+						</p:contextMenu>
+						
+					</p:outputLabel>
+					
+					<p:outputLabel styleClass="photoUploadLabel photoLabelFive float-right" value="+" for="@form:dataUser:uploadFifthPhoto"
+						style="background-image: url(#{perfilBean.usuario.fotoquintenaria})" id="quinP">
+						
+						<p:contextMenu for="quinP" styleClass="contextMenu">
+							<p:menuitem value="Apagar" actionListener="#{perfilBean.removePhoto(3)}" onclick="removeQui()" update="@form"/>
+						</p:contextMenu>
+						
+					</p:outputLabel>
+					
+				</h:panelGrid>
+				
+			</h:panelGroup>
+		</div>
+		<h:panelGroup styleClass="ui-g-9" id="dataUser">
+
+			<h:panelGroup id="modalData">
+
+				<div class="modal fade" id="profileModal" tabindex="-1"
+					role="dialog" aria-labelledby="profileModal" aria-hidden="true"
+					style="color: #000;">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<h:panelGroup layout="block" styleClass="modal-header" id="modalHeader">
+								<h3 class="modal-title text-center" id="exampleModalLabel">#{perfilBean.selectedUsuario.nome},
+									#{perfilBean.selectedUsuario.idade}</h3>
+								<button type="button" class="close" data-dismiss="modal"
+									aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</h:panelGroup>
+							<h:panelGroup styleClass="modal-body width100 d-flex flex-column" id="modalBody">
+
+								<div class="d-flex flex-row ui-g">
+
+									<div class="ui-g-4">
+										<div
+											class="container d-flex flex-column justify-content-around">
+											<p:repeat var="artist"
+												value="#{perfilBean.artistsSelectedUsuario}">
+												<div class="container ui-g align-items-center">
+													<h:graphicImage url="#{artist.getImages()[0].getUrl()}"
+														styleClass="imageArtist ui-g-4" />
+
+													<h4 class="ui-g-8 text-center">#{artist.name}</h4>
+												</div>
+											</p:repeat>
+										</div>
+									</div>
+
+									<div class="ui-g-4">
+										<div id="photoCarousel" class="carousel slide height100 width100" data-ride="carousel">
+													<ol class="carousel-indicators">
+														<li data-target="#photoCarousel" data-slide-to="0" class="active"></li>
+														<li data-target="#photoCarousel" data-slide-to="1" jsf:rendered="#{perfilBean.selectedUsuario.fotosecundaria.isEmpty() == false}"></li>
+														<li data-target="#photoCarousel" data-slide-to="2" jsf:rendered="#{perfilBean.selectedUsuario.fototerciaria.isEmpty() == false}"></li>
+														<li data-target="#photoCarousel" data-slide-to="3" jsf:rendered="#{perfilBean.selectedUsuario.fotoquaternaria.isEmpty() == false}"></li>
+														<li data-target="#photoCarousel" data-slide-to="4" jsf:rendered="#{perfilBean.selectedUsuario.fotoquintenaria.isEmpty() == false}"></li>
+													</ol>
+													<div class="carousel-inner">
+															
+														<div class="carousel-item active">
+															<h:graphicImage url="#{perfilBean.selectedUsuario.fotousuario}" styleClass="d-block w-100"
+																style="border: .1em solid black; height: 380px;"/>
+														</div>
+														<div class="carousel-item" jsf:rendered="#{perfilBean.selectedUsuario.fotosecundaria.isEmpty() == false}">
+															<h:graphicImage url="#{perfilBean.selectedUsuario.fotosecundaria}" styleClass="d-block w-100"
+																style="border: .1em solid black; height: 380px;"/>
+														</div>
+														<div class="carousel-item" jsf:rendered="#{perfilBean.selectedUsuario.fototerciaria.isEmpty() == false}">
+															<h:graphicImage url="#{perfilBean.selectedUsuario.fototerciaria}" styleClass="d-block w-100"
+																style="border: .1em solid black; height: 380px;"/>
+														</div>
+														<div class="carousel-item" jsf:rendered="#{perfilBean.selectedUsuario.fotoquaternaria.isEmpty() == false}">
+															<h:graphicImage url="#{perfilBean.selectedUsuario.fotoquaternaria}" styleClass="d-block w-100"
+																style="border: .1em solid black; height: 380px;"/>
+														</div>
+														<div class="carousel-item" jsf:rendered="#{perfilBean.selectedUsuario.fotoquintenaria.isEmpty() == false}">
+															<h:graphicImage url="#{perfilBean.selectedUsuario.fotoquintenaria}" styleClass="d-block w-100"
+																style="border: .1em solid black; height: 380px;"/>
+														</div>
+														
+														<a class="carousel-control-prev" href="#photoCarousel" role="button" data-slide="prev">
+														    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+														    <span class="sr-only">Previous</span>
+														  </a>
+														  <a class="carousel-control-next" href="#photoCarousel" role="button" data-slide="next">
+														    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+														    <span class="sr-only">Next</span>
+														  </a>
+														
+													</div>
+  
+												</div>
+
+									</div>
+
+									<div class="ui-g-4">
+										<div class="height100 width100 d-flex flex-column">
+											<div class="container text-center">
+												<h4>Música Favorita:</h4>
+												<h:graphicImage
+													url="#{perfilBean.musicSelectedUsuario.album.images[0].url}"
+													styleClass="imageMusic" />
+												<button onclick="playMusic()" class="playButton">
+													<i class="fa fa-play"></i>
+												</button>
+												<audio id="audio">
+													<source src="#{perfilBean.musicSelectedUsuario.getPreviewUrl()}" type="audio/mp3" id="audiosource"/>
+												</audio>
+												<h:outputScript library="js" name="musicPreview.js"/>
+												<h6 style="margin: .5rem 0">#{perfilBean.musicSelectedUsuario.name} -
+													#{perfilBean.musicSelectedUsuario.artists[0].name}</h6>
+												<div class="text-center">
+													<h:outputText
+														value="#{perfilBean.musicSelectedUsuario.album.name}"
+														styleClass="text-center" />
+												</div>
+											</div>
+											<div class="container" style="word-wrap: break-word;">
+												<hr class="width100" />
+												<h:outputText value="#{perfilBean.selectedUsuario.desc}" />
+											</div>
+											<div></div>
+										</div>
+									</div>
+
+								</div>
+
+							</h:panelGroup>
+						</div>
+					</div>
+				</div>
+			</h:panelGroup>
+
+			<h:panelGrid layout="block" columns="1" cellspacing="8"
+				styleClass="width100" rendered="#{perfilBean.wanderlei}">
+
+				<h3 class="text-center">Atualize seus dados</h3>
+
+				<p:fileUpload id="uploadPrimaryPhoto" mode="simple" accept="image/*" style="display: none;"
+					value="#{perfilBean.priImage}" html:onchange="previewPrimary()"/>
+				<p:fileUpload id="uploadSecondaryPhoto" mode="simple" accept="image/*" style="display: none;"
+					value="#{perfilBean.secImage}" html:onchange="previewSecondary()"/>
+				<p:fileUpload id="uploadTerciaryPhoto" mode="simple" accept="image/*" style="display: none;"
+				 	value="#{perfilBean.terImage}" html:onchange="previewTerciary()"/>
+				<p:fileUpload id="uploadQuaternaryPhoto" mode="simple" accept="image/*" style="display: none;"
+					value="#{perfilBean.quatImage}" html:onchange="previewQuaternary()"/>
+				<p:fileUpload id="uploadFifthPhoto" mode="simple" accept="image/*" style="display: none;"
+					value="#{perfilBean.quinImage}" html:onchange="previewFifth()"/>
+
+				<h:outputLabel value="Nome: " for="nome" />
+				<p:inputText value="#{perfilBean.usuario.nome}"
+					styleClass="form-control" id="nome"
+					placeholder="Digite seu nome..." />
+
+				<p:outputLabel value="Selecione sua música favorita: "
+					for="autocomplete" />
+				<p:autoComplete value="#{perfilBean.track}" id="autocomplete"
+					forceSelection="true" completeMethod="#{perfilBean.completeMusic}"
+					var="music" inputStyleClass="form-control empty"
+					styleClass="width100"
+					itemLabel="#{music.name} - #{music.getAlbum().getArtists()[0].getName()}"
+					panelStyleClass="text-center" itemValue="#{music}"
+					emptyMessage="Musica não encontrada"
+					placeholder="Procure aqui sua música favorita">
+					<f:converter converterId="trackConverter" />
+					<p:column>
+						<h:graphicImage styleClass="imageIcon"
+							url="#{music.getAlbum().getImages()[0].getUrl()}" />
+					</p:column>
+					<p:column>
+						<h:outputText
+							value="#{music.name} - #{music.getAlbum().getArtists()[0].getName()}" />
+					</p:column>
+				</p:autoComplete>
+				
+				<p:outputLabel for="artistas" value="Selecione seus artistas favoritos: (Deixe vazio para continuar com os mesmo artistas)"/>
+				
+				<p:selectCheckboxMenu id="artistas" value="#{perfilBean.checkedArtistsString}" label="Artistas" filter="false" rendered="#{perfilBean.needAutoComplete == false}"
+                              panelStyle="height:250px; width: 75%;" multiple="true"  styleClass="form-control selectbox">
+		            <f:selectItems value="#{perfilBean.relevantArtists}" itemValue="#{a.id}" var="a" itemLabel="#{a.name}"/>
+		            <f:validator validatorId="artistValidator" />
+		        </p:selectCheckboxMenu>
+
+				<p:autoComplete id="bandasComplete" value="#{perfilBean.checkedArtists}" multiple="true"
+						panelStyleClass="text-center" emptyMessage="Artista não encontrada" required="true" 
+						requiredMessage="Adicione no mínimo uma banda para poder se cadastrar no sistema"
+						completeMethod="#{perfilBean.completeArtists}" inputStyleClass="form-control"
+						styleClass="width100" var="artist" itemLabel="#{artist.name}" itemValue="#{artist}"  
+						rendered="#{perfilBean.needAutoComplete == true}" scrollHeight="150" >
+					<p:column>
+						<h:graphicImage url="#{artist.getImages()[0].getUrl()}" styleClass="imageIcon"/>
+					</p:column>
+					<p:column>
+				 		<h:outputText value="#{artist.name}"/>
+				 	</p:column>
+				 	<f:converter converterId="artistConverter"/>
+				 	<f:validator validatorId="artistValidator"/>
+				</p:autoComplete>
+			
+				<h:panelGroup styleClass="text-right" style="margin: .1rem 0;font-style: italic;" layout="block">
+					<h:outputText value="Artistas favoritos: "/>
+					<c:forEach items="#{perfilBean.usuarioArtists}" var="a">
+						<h:outputText value="#{a.name} . "/>
+					</c:forEach>
+				</h:panelGroup>
+												
+				<p:outputLabel for="desc" value="Descrição: " />
+				<p:inputTextarea value="#{perfilBean.usuario.desc}" rows="2"
+					styleClass="form-control" id="desc"
+					placeholder="Coloque aqui uma descrição sua.."
+					style="resize: none;" />
+				
+				<br />
+				<p:commandButton value="Atualizar" ajax="false"
+					action="#{perfilBean.updateUserData}"
+					styleClass="btn btn-dark" />
+
+			</h:panelGrid>
+
+			<p:outputPanel autoUpdate="true" layout="block" rendered="#{!perfilBean.wanderlei}"
+				id="friendsData" >
+				<div class="container height100">
+
+					<p:dataScroller value="#{perfilBean.solicitacoes}" var="u" rows="4" styleClass="scrollerData" 
+						rendered="#{perfilBean.solicitacoes.size() != 0}">
+						<f:facet name="header">
+					 			<h3 style="margin-left: 3rem;" class="text-left">Solicitações pendentes</h3>
+				 		</f:facet>
+					 	
+					 		<p:commandLink action="#{perfilBean.setSelectedUsuario(u)}" styleClass="linkModal"
+					 			update="@form:modalData:modalHeader @form:modalData:modalBody">				 		
+								<h:panelGrid columns="2" styleClass="width100"
+									columnClasses="ui-g-1, ui-g-11" rowClasses="ui-g">
+									<h:graphicImage
+										url="#{u.fotousuario}" styleClass="imageIcon" />
+		
+									<h:panelGroup
+										styleClass="d-flex flex-row justify-content-between">
+										<h3 data-target="#profileModal" data-toggle="modal">#{u.nome}</h3>
+										<div>
+											<p:commandButton styleClass="btn btn-dark" value="Ignorar" 
+												action="#{perfilBean.changeRequestStatus(2,u)}" update="@form"/>
+											<p:commandButton styleClass="btn btn-dark" action="#{perfilBean.changeRequestStatus(1,u)}"
+												update="@form" value="Aceitar" oncomplete="acceptRequest()" />
+										</div>
+									</h:panelGroup>
+									
+								</h:panelGrid>
+							</p:commandLink>
+							<script>
+								function acceptRequest(){
+									var message = {
+										type: 'acceptRequest',
+										mensagem: '#{perfilBean.usuario.nome} aceitou sua solicitação', 
+										fkusuario: '#{u.idusuario}'
+									}
+									console.log("aaa");
+									envia(JSON.stringify(message));
+								}
+								
+								
+							</script>
+					</p:dataScroller>
+
+
+					<p:dataScroller value="#{perfilBean.amigos}" var="u" rows="10" 
+						id="dataScroller" styleClass="scrollerData">
+						<f:facet name="header">
+								<h3 class="text-left" style="margin-left: 3rem;">Suas amizades</h3>
+							</f:facet>
+						<h:panelGrid columns="2" styleClass="width100"
+							columnClasses="ui-g-1, ui-g-11" rowClasses="ui-g align-items-center">
+							
+							<p:link value="Você ainda não fez amigos, clique aqui e comece a conhecer pessoas" outcome="busca.xhtml" 
+									rendered="#{perfilBean.amigos.size() == 0}"  style="color: #000; text-decoration: none;"/>
+							
+							<h:graphicImage
+								url="#{u.fotousuario}"
+								styleClass="imageIcon" />
+
+							<h:panelGroup layout="block"
+								styleClass="d-flex flex-row justify-content-between">
+								<h5>#{u.nome}</h5>
+								<div class="d-flex flex-row">
+									<div class="dropdown show">
+									  <a class="btn btn-outline-dark dropdown-toggle" href="#" role="button" id="dropdownMenuLink" 
+									  		data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									    Opções
+									  </a>
+									
+									  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+									  	<div data-toggle="modal" data-target="#profileModal" class="dropdown-item">
+										    <p:commandLink action="#{perfilBean.setSelectedUsuario(u)}" style="color: #000;"
+										    	update="@form:modalData:modalHeader @form:modalData:modalBody" value="Ver pefil"/>
+									  	</div>
+									  	
+									    <p:commandLink value="Apagar amizade" action="#{perfilBean.removeFriend(u)}" styleClass="dropdown-item" update="@form">
+							    			<p:confirm header="Apagar amizade" message="Tem certeza que deseja apagar #{u.nome} da sua lista de amigos?"
+							    				icon="ui-icon-alert"/>
+							    		</p:commandLink>
+							    		<p:confirmDialog global="true" showEffect="fade" hideEffect="fade" style="background-color: #FFF">
+									        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes btn btn-outline-dark" 
+									        		 icon="ui-icon-check" update="@form"/>
+									        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no btn btn-outline-dark" icon="ui-icon-close" />
+									    </p:confirmDialog>
+									  </div>
+									</div>
+
+								</div>
+							</h:panelGroup>
+						</h:panelGrid>
+
+					</p:dataScroller>
+				</div>
+			</p:outputPanel>
+		</h:panelGroup>
+		
+		<h:panelGroup id="chatbox" layout="block">
+						<div id="chatbox" class="col-sm-3 col-sm-offset-4 frame chatbox collapse">
+						<h:panelGroup styleClass="text-center headerChatbox" layout="block" id="headerChatbox">
+							<h5>#{perfilBean.usuarioChat.nome}</h5>
+							<button type="button" class="close" onclick="hideCollapse()" aria-label="Close">
+					          <span aria-hidden="true">&times;</span>
+					        </button>
+				        </h:panelGroup>
+						<hr style="background-color: #FFF;" />
+						<h:panelGroup id="dataListMessages" layout="block" style="height: 200px;">
+							<ul class="listChatBox" >
+								<p:dataList value="#{perfilBean.friendsMessage}" var="message"> 
+									<h:panelGroup style="width: 100%;"
+											rendered="#{message.fkusuariosend == perfilBean.usuarioChat.idusuario}">
+										<div class="msj-rta macro">
+												<div class="text text-r">
+													<p>#{message.msgText}</p>
+													<p>
+														<small>#{message.msgData}</small>
+													</p>
+												</div>
+												<div class="avatar"
+													style="padding: 0px 0px 0px 10px !important">
+													<img class="chatboxIcon" style="width: 100%;"
+														src="#{perfilBean.usuario.fotousuario}" />
+												</div>
+											</div>
+									</h:panelGroup>
+									
+									<h:panelGroup style="width: 100%;"
+											rendered="#{message.fkusuariosend != perfilBean.usuarioChat.idusuario}">
+										<div class="msj macro">
+											<div class="avatar">
+												<img class="chatboxIcon" style="width: 100%;"
+													src="#{perfilBean.usuarioChat.fotousuario}" />
+											</div>
+											<div class="text text-l">
+												<p>#{message.msgText}</p>
+												<p>
+													<small>#{message.msgData}</small>
+												</p>
+
+											</div>
+										</div>
+									</h:panelGroup>
+								
+								</p:dataList>
+						
+							</ul>
+						</h:panelGroup>
+							
+							<div class="formDiv">
+								<div class="msj-rta macro text-center" style="width: 95%;margin-right: .45em;">
+									<div class="text text-r width100">
+										<p:inputText styleClass="mytext textMessage"
+											placeholder="Digite sua mensagem" onkeypress="enterPress(event)"/>
+									</div>
+
+								</div>
+								<div class="buttonDivChatBox">
+									<p:commandButton icon="fa fa-send" styleClass="btn btn-link btnSendMessage" type="submit"
+										onclick="sendMessage()" async="true"/>
+								</div>
+							</div>
+						</div>
+						<h:panelGroup id="scripts">
+							<script>
+							
+								function enterPress(e){
+									var code = (e.keyCode ? e.keyCode : e.which);
+									if(code == 13) { 
+										e.preventDefault();
+									 	sendMessage();
+									}
+								}
+							
+								function sendMessage(){
+									console.log(#{perfilBean.usuarioChat.idusuario})
+									
+									event.preventDefault();
+									var msgCome = document.querySelector(".textMessage");
+									var mensagem = 
+										{
+											msgtexto: msgCome.value,
+											type: "mensagem",
+											fkusuario: '#{perfilBean.usuarioChat.idusuario}',
+											fkcontato: '#{perfilBean.usuarioChat.idcontato}',
+											idusuario: '#{perfilBean.usuario.idusuario}',
+											nomeusuario: '#{perfilBean.usuario.nome}'
+										}
+									
+									$.when(envia(JSON.stringify(mensagem)))
+									.done(function() {
+										msgCome.value = "";
+									})
+								}
+								
+								function insertIntoChatbox(jsonData) {
+									
+									var chatbox = $("#chatbox");
+									
+									if(chatbox.is(":visible")){
+										
+										if (#{perfilBean.usuarioChat.idcontato} == jsonData.fkcontato) {
+											
+											if (jsonData.fkusuario == #{perfilBean.usuario.idusuario}){
+										        
+												control = '<li style="width:95%">' +
+										                        '<div class="msj macro">' +
+										                        '<div class="avatar"><img class="chatboxIcon" style="width:100%;" src="#{perfilBean.usuarioChat.fotousuario}"/></div>' +
+										                            '<div class="text text-l">' +
+										                                '<p>'+ jsonData.msgtexto +'</p>' +
+										                                '<p><small>'+jsonData.msgdata+'</small></p>' +
+										                            '</div>' +
+										                        '</div>' +
+										                        
+										                    '</li>';    
+										                    
+											}else{
+										    
+												control = '<li style="width:95%;">' +
+										                        '<div class="msj-rta macro">' +
+										                            '<div class="text text-r">' +
+										                                '<p>'+jsonData.msgtexto+'</p>' +
+										                                '<p><small>'+jsonData.msgdata+'</small></p>' +
+										                            '</div>' +
+											                        '<div class="avatar" style="padding:0px 0px 0px 10px !important"><img class="chatboxIcon" style="width:100%;" src="#{perfilBean.usuario.fotousuario}" /></div>' +                                
+									                            '</div>' +
+										                  '</li>';
+		
+										    }
+											
+											var messageArea = $(".listChatBox");
+											messageArea.append(control).scrollTop(messageArea.prop('scrollHeight'));
+										
+										}else{
+											
+											PF('messageCame').renderMessage({
+												'summary': jsonData.nomeusuario + ' diz: ',
+												'detail' : jsonData.msgtexto,
+												'severity': 'info'
+											});
+											
+										}
+									
+									}else{
+										
+										$.when(chatboxFirst()).done(function (){
+											
+											control = '<li style="width:100%">' +
+						                        '<div class="msj macro">' +
+						                        '<div class="avatar"><img class="chatboxIcon" style="width:100%;" src="#{perfilBean.usuarioChat.fotousuario}"/></div>' +
+						                            '<div class="text text-l">' +
+						                                '<p>'+ jsonData.msgtexto +'</p>' +
+						                                '<p><small>'+jsonData.msgdata+'</small></p>' +
+						                            '</div>' +
+						                        '</div>' +
+						                        
+						                    '</li>';
+						                    
+											var messageArea = $(".listChatBox");
+											messageArea.append(control).scrollTop(messageArea.prop('scrollHeight'));
+											setTimeout(function (){
+												showChatbox();												
+											},500)
+										})
+									}
+									
+								}
+							</script>	
+							<h:outputScript library="js" name="scroller.js" />
+						</h:panelGroup>
+							
+					</h:panelGroup>
+				
+		
+				<p:stack icon="/resources/img/icons/messageIcon.png" id="stackFriends">
+					<c:forEach items="#{perfilBean.lastFriends}" var="user" begin="0"
+						end="4">
+						<p:menuitem value="#{user.principalName}" styleClass="menuitem" ajax="true" async="true"
+							onclick="showChatbox() " action="#{perfilBean.setUsuarioChat(user)}" 
+							icon="#{user.fotousuario}" update="@form:chatbox:dataListMessages @form:chatbox:headerChatbox @form:chatbox:scripts"/>
+					</c:forEach>
+				</p:stack>
+
+	</h:form>
+
+
+	<h:outputScript library="js" name="scroller.js"/>
+	<h:outputScript library="js" name="photoPreview.js"/>
+
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,62 @@
+.blackBlock {
+	background-color: #000000;
+	color: #FFFFFF;
+	height: -webkit-fill-available;
+}
+
+.photoUploadLabel{
+  background-color: #000;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #FFF;
+  border: .1em solid #FFF;
+  cursor: pointer;
+  height: 15vh;
+  width: 100%;
+  font-size: 2em !important;
+}
+
+
+.selectbox {
+	width: 100% !important;
+	background-color: #FFF !important;
+	background-image: none !important;
+	padding: 0 !important;
+}
+
+.ui-selectcheckboxmenu-multiple ul {
+	padding: 5px 0 !important;
+}
+
+.ui-selectcheckboxmenu-token , .ui-autocomplete-token{
+	background-color: #000 !important;
+	background-image: none !important;
+	color: #FFF !important;
+}
+
+.ui-selectcheckboxmenu-trigger {
+	width: 30px !important;
+}
+
+.fileUploaderInput {
+	background-color: #000;
+	color: #FFF;
+	border: .1em solid #FFF;
+	border-radius: 100%;
+	cursor: pointer;
+	padding: 20px 25px;
+	font-size: 2em;
+}
+
+.ui-autocomplete-multiple-container.ui-inputfield{
+	width: 100% !important;
+}
+
+.ui-state-highlight{
+	background-color: #000 !important;
+	color: #FFF !important;
+	background-image: none !important;
+}
+.ui-growl{
+	top: 100px !important;
+}

@@ -1,0 +1,30 @@
+.scrollerData .ui-widget-header{
+	background-color: #000 !important;
+	color: #FFF !important;
+}
+
+.ui-datascroller-content{
+	border: 0 !important; 
+}
+
+.selectbox{
+	width: 100% !important;
+	background-image: none !important;
+	background-color: #FFF !important;
+}
+
+.scrollerData div.ui-datascroller-content ul li:nth-child(1n+2){
+	border-top: .08em solid #000;
+}
+
+.listChatBox .ui-datalist .ui-datalist-content{
+	border: none !important;
+    background: none !important;
+    color: #000 !important; 
+}
+
+.btnSendMessage{
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}

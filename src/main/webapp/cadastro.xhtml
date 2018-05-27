@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:html="http://xmlns.jcp.org/jsf/passthrough">
+
+<ui:composition template="_template.xhtml">
+	<ui:define name="theme">
+		<h:outputStylesheet library="bootstrap" name="theme.css"/>
+	</ui:define>
+	<f:metadata>
+		<f:event listener="#{authSpotifyBean.authorizationCode()}"
+			type="preRenderView" />
+	</f:metadata>
+
+	<ui:define name="tituloPag"> Zebro - Entre com alguns dados </ui:define>
+	<ui:param name="cadastro" value="none" />
+	
+	<ui:define name="conteudo">
+
+		<h:form styleClass="ui-g" enctype="multipart/form-data" id="pageForm">
+			
+			
+			<h:panelGroup layout="block" styleClass="ui-g-3 blackBlock" id="userData">
+
+					<div class="text-center container d-flex flex-column">
+						<h:panelGroup rendered="#{authSpotifyBean.usuario.nome != null}">
+							<h2 id="nome">#{authSpotifyBean.usuario.nome}</h2>
+						</h:panelGroup>
+						
+						<h:panelGroup rendered="#{authSpotifyBean.usuario.nome == null}">
+							<h2 id="nome">Seu nome</h2>
+						</h:panelGroup>
+						
+						<p:outputLabel for="uploadPrimaryPhoto" style="cursor: pointer">						
+							<h:graphicImage url="http://localhost:8080/Zebro/resources/img/undefined.png" styleClass="imageView" 
+								rendered="#{authSpotifyBean.usuario.fotousuario == null}"/>
+							<h:graphicImage url="#{authSpotifyBean.usuario.fotousuario}" styleClass="imageView" 
+								rendered="#{authSpotifyBean.usuario.fotousuario != null}"/>
+						</p:outputLabel>
+						
+						<h:panelGrid columns="2" columnClasses="ui-g-6,ui-g-6" styleClass="width100" rowClasses="ui-g" id="labelFotos">
+							
+							<p:outputLabel styleClass="photoUploadLabel photoLabelSec float-right" value="+" for="uploadSecondaryPhoto" id="secundaryP">
+								<p:contextMenu for="secundaryP" styleClass="contextMenu">
+									<p:menuitem value="Apagar"  update="@form" actionListener="#{authSpotifyBean.removePhoto(0)}" onclick="removeSec()"/>
+								</p:contextMenu>
+							</p:outputLabel>
+							
+							<p:outputLabel styleClass="photoUploadLabel photoLabelTer float-right" value="+" for="uploadTerciaryPhoto" id="terciaryP">
+							
+								<p:contextMenu for="terciaryP" styleClass="contextMenu">
+									<p:menuitem value="Apagar" actionListener="#{authSpotifyBean.removePhoto(1)}" onclick="removeTer()" update="@form"/>
+								</p:contextMenu>
+							</p:outputLabel>
+							
+							<p:outputLabel styleClass="photoUploadLabel photoLabelQuat float-right" value="+" for="uploadQuaternaryPhoto" id="quatP">
+								<p:contextMenu for="quatP" styleClass="contextMenu">
+									<p:menuitem value="Apagar" actionListener="#{authSpotifyBean.removePhoto(2)}" onclick="removeQua()" update="@form"/>
+								</p:contextMenu>
+							</p:outputLabel>
+							
+							<p:outputLabel styleClass="photoUploadLabel photoLabelFive float-right" value="+" for="uploadFifthPhoto" id="quinP">
+								<p:contextMenu for="quinP" styleClass="contextMenu">
+									<p:menuitem value="Apagar" actionListener="#{authSpotifyBean.removePhoto(3)}" onclick="removeQui()" update="@form"/>
+								</p:contextMenu>
+							</p:outputLabel>
+						
+						</h:panelGrid>
+						
+						<p:fileUpload id="uploadPrimaryPhoto" mode="simple" accept="image/*" style="display: none;"
+							value="#{authSpotifyBean.priImage}" html:onchange="previewPrimary()"/>
+						<p:fileUpload id="uploadSecondaryPhoto" mode="simple" accept="image/*" style="display: none;"
+							value="#{authSpotifyBean.secImage}" html:onchange="previewSecondary()"/>
+						<p:fileUpload id="uploadTerciaryPhoto" mode="simple" accept="image/*" style="display: none;"
+						 	value="#{authSpotifyBean.terImage}" html:onchange="previewTerciary()"/>
+						<p:fileUpload id="uploadQuaternaryPhoto" mode="simple" accept="image/*" style="display: none;"
+							value="#{authSpotifyBean.quatImage}" html:onchange="previewQuaternary()"/>
+						<p:fileUpload id="uploadFifthPhoto" mode="simple" accept="image/*" style="display: none;"
+							value="#{authSpotifyBean.fifthImage}" html:onchange="previewFifth()"/>
+					</div>
+
+			</h:panelGroup>
+
+			<h:panelGroup layout="block" styleClass="ui-g-9" style="height: -webkit-fill-available">
+				
+				<p:growl autoUpdate="true" life="55000" />
+				<h3 class="text-center" style="margin: 1.5rem 0;">Digite alguns dados para completarmos seu cadastro.</h3>
+
+				<h:panelGrid columns="4" styleClass="width100" columnClasses="ui-g-2, ui-g-4, ui-g-2, ui-g-4" 
+						rowClasses="ui-g align-items-center">
+					
+					
+					<p:outputLabel value="Nome: " for="nome"/>						
+					<p:inputText value="#{authSpotifyBean.usuario.nome}" styleClass="form-control nomeInput" id="nome" required="true"
+							requiredMessage="É necessário um nome" placeholder="Digite seu nome..."/>
+					
+					<p:outputLabel value="E-mail: " for="email"/>						
+					<p:inputText type="email" value="#{authSpotifyBean.usuario.email}" styleClass="form-control" id="email" required="true"
+							requiredMessage="É necessário cadastrar um e-mail" placeholder="Digite aqui seu email"/>
+					
+					<p:outputLabel value="Musica favorita: " for="autocomplete"/>
+					<p:autoComplete value="#{authSpotifyBean.musfavusuario}" id="autocomplete" forceSelection="true"
+						 	completeMethod="#{authSpotifyBean.completeMusic}" var="music" inputStyleClass="form-control empty" 
+						 	styleClass="width100" itemLabel="#{music.name} - #{music.getAlbum().getArtists()[0].getName()}" 
+						 	panelStyleClass="text-center" itemValue="#{music}" required="true" requiredMessage="Adicione uma musica favorita"
+						 	emptyMessage="Musica não encontrada" placeholder="Procure aqui sua música favorita">
+					 	<f:converter converterId="trackConverter" />
+					 	<p:column>
+					 		<h:graphicImage styleClass="imageIcon" url="#{music.getAlbum().getImages()[0].getUrl()}"/>
+					 	</p:column>
+					 	<p:column>
+					 		<h:outputText value="#{music.name} - #{music.getAlbum().getArtists()[0].getName()}"/>
+					 	</p:column>
+				 	</p:autoComplete>
+
+					<p:outputLabel value="Data de Nascimento: " for="data"/>
+					<p:calendar timeZone="America/Sao_Paulo" pattern="dd/MM/yyyy" value="#{authSpotifyBean.usuario.calendarnascusuario.time}" 
+							required="true" requiredMessage="Determine sua data de nascimento" inputStyleClass=" form-control" 
+							id="data" mask="99/99/9999"/>
+	
+				</h:panelGrid>
+				<h:panelGrid columns="2" columnClasses="ui-g-2, ui-g-10" styleClass="width100" rowClasses="ui-g align-items-center">
+					
+					<p:outputLabel value="Bandas Favoritas: " for="bandas"/>
+
+					<p:selectCheckboxMenu value="#{authSpotifyBean.usuario.favoriteArtist}" multiple="true" id="bandas"
+							styleClass="form-control selectbox" scrollHeight="150" showHeader="false" required="true" 
+							requiredMessage="Selecione no mínimo uma banda para poder se cadastrar no sistema" label="Escolha até cinco bandas entre as listadas" rendered="#{authSpotifyBean.newAccount == false}">
+						<f:validator validatorId="artistValidator"/>
+						<f:selectItems value="#{authSpotifyBean.relevantArtists}" var="a" itemLabel="#{a.name}" itemValue="#{a.id}"/>
+					</p:selectCheckboxMenu>
+					
+					<p:autoComplete id="bandasComplete" value="#{authSpotifyBean.selectedArtists}" multiple="true"
+						panelStyleClass="text-center" emptyMessage="Artista não encontrada" required="true" 
+						requiredMessage="Adicione no mínimo uma banda para poder se cadastrar no sistema"
+						completeMethod="#{authSpotifyBean.completeArtists}" inputStyleClass="form-control"
+						styleClass="width100" var="artist" itemLabel="#{artist.name}" itemValue="#{artist}"  
+						rendered="#{authSpotifyBean.newAccount == true}" scrollHeight="150" >
+						<p:column>
+							<h:graphicImage url="#{artist.getImages()[0].getUrl()}" styleClass="imageIcon"/>
+						</p:column>
+						<p:column>
+					 		<h:outputText value="#{artist.name}"/>
+					 	</p:column>
+					 	<f:converter converterId="artistConverter"/>
+					 	<f:validator validatorId="artistValidator"/>
+					</p:autoComplete>
+					
+					<p:outputLabel for="sex" value="Determine seu sexo:" />
+			        <p:selectOneRadio id="sex" value="#{authSpotifyBean.usuario.sexousuario}" required="true" converter="javax.faces.Integer"
+			        		requiredMessage="Determine seu sexo">
+			            <f:selectItem itemLabel="Masculino" itemValue="0" html:checked="checked" />
+			            <f:selectItem itemLabel="Feminino" itemValue="1" />
+			        </p:selectOneRadio>
+					
+					<h:inputHidden value="#{authSpotifyBean.usuario.latusuario}" html:id="latUser" required="true"/>
+					<h:inputHidden value="#{authSpotifyBean.usuario.lonusuario}" html:id="lonUser" required="true" 
+							requiredMessage="Habilite a localização para que possamos ter total funcionalidade"/>
+					
+					<p:outputLabel for="desc" value="Descrição: " />
+					<p:inputTextarea value="#{authSpotifyBean.usuario.desc}" rows="2" styleClass="form-control" 
+							id="desc" placeholder="Coloque aqui uma descrição sua.." style="resize: none;"/>
+
+					
+				</h:panelGrid>				
+				<p:commandButton value="Terminar cadastro" styleClass="btn btn-dark float-right" action="#{authSpotifyBean.finishForm()}"
+					style="position: absolute; bottom: 10px; right: 10px;" ajax="false"/>
+			
+			</h:panelGroup>
+
+		</h:form>
+
+		<h:outputScript library="js" name="cadastro.js"/>
+		<h:outputScript library="js" name="photoPreview.js"/>
+	</ui:define>
+
+</ui:composition>
+</html>

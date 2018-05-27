@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<ui:composition template="_template.xhtml">
+
+	<ui:define name="tituloPag">
+	    Zebro - Baixe nosso Aplicativo
+	</ui:define>
+	
+	<ui:define name="conteudo">
+		
+		<h:form>
+	
+			<h:panelGroup layout="block" styleClass="container responsive">
+				<div>
+					<h3 style="margin: 1rem 0;" class="text-center">Junte-se a nós!</h3>
+					
+					<p>Hey, nós também temos um aplicativo para seu dispositivo portatil.
+					Baixe nosso aplicativo no seu dispositivo mobile e maximize o poder de uso.</p>
+				</div>
+					
+				<p:commandButton value="Clique para baixar" styleClass="text-center btn btn-outline-dark"/>
+			
+				
+			</h:panelGroup>
+		
+		</h:form>
+		
+	</ui:define>
+	
+</ui:composition>
+</html>

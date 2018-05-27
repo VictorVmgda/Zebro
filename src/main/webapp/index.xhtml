@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="_template.xhtml">
+
+	<ui:define name="tituloPag">Zebro - Principal</ui:define>
+	
+	<ui:define name="conteudo">
+
+		<main>
+		<p:growl autoUpdate="true" life="3000"/>
+		
+		<div class="margin-topH">
+			<div id="firstBlock">
+				<div class="container">
+					<div class="d-flex flex-row justify-content-between">
+	
+						<div class="container d-flex flex-column justify-content-around" id="textFirstBlock">
+	
+							<h3 class="text-center">Entre no nosso mundo preto e branco</h3>
+	
+							<p class="lead">Venha e conheça outras pessoas de acordo com
+								seu gosto musical e a partir de uma sincronização com Spotify
+								para maior precisão.</p>
+	
+							<div class="text-center">
+								<button type="button" name="button"
+									class="btn btn-outline-secondary btn-lg" 
+									data-toggle="modal" data-target="#loginModal">Junte-se a nós</button>
+							</div>
+	
+						</div>
+	
+						<div class="container text-center" id="imageFirstBlock">
+	
+							<h:graphicImage library="img" name="dedinhos.gif" alt="Dedos 'Andando'" styleClass="imageIndex"/>
+	
+						</div>
+	
+					</div>
+	
+				</div>
+			</div>
+			
+			<div id="works">
+
+				<div class="d-flex flex-row justify-content-between">
+
+					<div class="container text-center">
+						<div class="container imageIndex" id="animationPass"></div>
+					</div>
+
+					<div class="container d-flex flex-column justify-content-around">
+
+						<h3 class="text-center">Vejamos um passo a passo</h3>
+
+						<p class="lead">Primeiro faça login ou cadastre-se. Após isso,
+							você entrará na tela principal podendo encontrar pessoas de
+							acordo com seu gosto musical, além disso, o mesmo pode ser
+							alterado na tela do seu perfil. Podemos ver as solicitações e
+							mensagens em cada aba, sem contar com uma parte especialmente
+							para shows.</p>
+
+					</div>
+
+				</div>
+
+			</div>
+
+			<div class="pretoComBranco" id="existence">
+				<div class="d-flex flex-row justify-content-around">
+
+					<div class="container d-flex flex-column justify-content-start" style="margin-left: 4em">
+
+						<h3 class="text-center" style="margin: 4.5em 0;">Sempre procurando...</h3>
+
+						<p class="lead">Em um meio social que é na maior parte das vezes cansativo e estressante,
+						 estamos sempre buscando um ambiente que nos agrade e que esteja ao nosso alcance. 
+						 Entre no Zebro e a partir de sua localização e de uma distância escolhida, vamos fazer com
+						 que encontre pessoas pelos seus gostos musicais.
+						 
+						</p>
+
+					</div>
+
+					<div class="container">
+						<h:graphicImage library="img" name="distance.gif" alt="Distância" styleClass="imageIndex"/>
+					</div>
+
+				</div>
+			</div>			
+
+			<div class="container" id="app">
+
+				<div class="d-flex flex-row justify-content-between">
+					<div class="container">
+						<h:graphicImage library="img" name="app.png" alt="Aplicativo Mobile" styleClass="imageIndex"/>
+					</div>
+
+					<div class="container d-flex flex-column justify-content-around">
+
+						<h3 class="text-center">Baixe nosso aplicativo!</h3>
+
+						<p class="lead">Se você gostou do que viu e deseja entrar no
+							nosso mundo pelo celular, saiba que também é possível. O Zebro
+							quer se adaptar a você e tornar incrível cada segundo conosco.
+							Junte-se a nós e nos diga o que você achou.</p>
+
+						<div class="d-flex flex-row justify-content-around container">
+							<button type="button" name="button" class="btn btn-outline-dark">Play
+								Store</button>
+							<button type="button" name="button"
+								class="btn btn-outline-secondary">Apple Store</button>
+						</div>
+
+					</div>
+
+
+				</div>
+
+			</div>
+
+		</div>
+
+		</main>
+
+	</ui:define>
+</ui:composition>
+</html>
