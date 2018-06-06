@@ -245,6 +245,7 @@ public class PerfilBean implements Serializable{
 	}
 	
 	public void deleteAccount() {
+		System.out.println(this.usuario.getIdusuario());
 		this.logoffmessage = "Conta deletada com sucesso";
 		boolean deleteAccount = this.usuarioService.deleteAccount(this.usuario.getIdusuario());
 		
