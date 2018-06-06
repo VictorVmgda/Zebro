@@ -72,14 +72,18 @@ public class Usuario {
 	}
 
 	public Integer getIdade() {
-		Date date = Date.valueOf(nascusuario);
-		calendarnascusuario.setTime(date);
-		Integer idade = Calendar.getInstance().get(Calendar.YEAR) - calendarnascusuario.get(Calendar.YEAR);
-		if (calendarnascusuario.get(Calendar.MONTH) - Calendar.getInstance().get(Calendar.MONTH) <= 0 && 
-				calendarnascusuario.get(Calendar.DAY_OF_MONTH) - Calendar.getInstance().get(Calendar.DAY_OF_MONTH) < 0) {
-			idade -= 1;
+		try {
+			Date date = Date.valueOf(nascusuario);			
+			calendarnascusuario.setTime(date);
+			Integer idade = Calendar.getInstance().get(Calendar.YEAR) - calendarnascusuario.get(Calendar.YEAR);
+			if (calendarnascusuario.get(Calendar.MONTH) - Calendar.getInstance().get(Calendar.MONTH) <= 0 && 
+					calendarnascusuario.get(Calendar.DAY_OF_MONTH) - Calendar.getInstance().get(Calendar.DAY_OF_MONTH) < 0) {
+				idade -= 1;
+			}
+			return idade;
+		} catch (Exception e) {
+			return null;
 		}
-		return idade;
 	}
 
 	public String getSpotifyid() {
@@ -246,7 +250,11 @@ public class Usuario {
 	}
 	
 	public Integer getDistance() {
-		return Double.valueOf(distance).intValue();
+		try {
+			return Double.valueOf(distance).intValue();			
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	public void setDistance(String distance) {

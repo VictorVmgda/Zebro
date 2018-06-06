@@ -98,15 +98,14 @@ public class ContatoService extends ServiceApi {
 	
 	//DELETE METHODS
 	
-	public void deleteUserFriend(Integer idcontato) {
+	public int deleteUserFriend(Integer idcontato) {
 		Client c = Client.create();
 		WebResource resource = c.resource(URL_SERVICE + "me/friends");
 		MultivaluedMap<String, String> map = new MultivaluedMapImpl<String, String>();
 		map.add("idcontato", String.valueOf(idcontato));
 		
 		ClientResponse delete = resource.accept("application/x-www-form-urlencoded").delete(ClientResponse.class, map);
-		System.out.println(delete.getStatus());
-		
+		return delete.getStatus();
 	}
 
 }

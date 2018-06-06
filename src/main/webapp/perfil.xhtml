@@ -397,9 +397,22 @@
 					style="resize: none;" />
 				
 				<br />
-				<p:commandButton value="Atualizar" ajax="false"
-					action="#{perfilBean.updateUserData}"
-					styleClass="btn btn-dark" />
+				
+				<h:panelGroup layout="block" styleClass="d-flex flex-row justify-content-between">
+					<p:commandButton value="Atualizar" ajax="false"
+						action="#{perfilBean.updateUserData}"
+						styleClass="btn btn-dark" />
+						
+					<p:commandLink value="Apagar conta" action="#{perfilBean.deleteAccount()}" styleClass="btn btn-dark" update="@form">
+		    			<p:confirm header="Deletar conta" message="Tem certeza que deseja apagar sua conta?"
+		    				icon="ui-icon-alert"/>
+		    		</p:commandLink>
+		    		<p:confirmDialog global="true" showEffect="fade" hideEffect="fade" style="background-color: #FFF">
+				        <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes btn btn-outline-dark" 
+				        		 icon="ui-icon-check" update="@form"/>
+				        <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no btn btn-outline-dark" icon="ui-icon-close" />
+				    </p:confirmDialog>
+				</h:panelGroup>
 
 			</h:panelGrid>
 
@@ -485,9 +498,9 @@
 							    				icon="ui-icon-alert"/>
 							    		</p:commandLink>
 							    		<p:confirmDialog global="true" showEffect="fade" hideEffect="fade" style="background-color: #FFF">
-									        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes btn btn-outline-dark" 
+									        <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes btn btn-outline-dark" 
 									        		 icon="ui-icon-check" update="@form"/>
-									        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no btn btn-outline-dark" icon="ui-icon-close" />
+									        <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no btn btn-outline-dark" icon="ui-icon-close" />
 									    </p:confirmDialog>
 									  </div>
 									</div>

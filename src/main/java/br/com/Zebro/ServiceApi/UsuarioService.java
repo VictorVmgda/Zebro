@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.primefaces.json.JSONObject;
 
@@ -14,7 +15,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import br.com.Zebro.Models.Usuario;
 
@@ -119,6 +122,18 @@ public class UsuarioService extends ServiceApi {
 		
 		Usuario usuario = getGson().fromJson(json, Usuario.class);
 		return usuario;
+	}
+	
+	public boolean deleteAccount(Integer id) {
+		Client c = Client.create();
+		WebResource resource = c.resource(URL_SERVICE + "me/delete");
+		
+		MultivaluedMap<String, String> data = new MultivaluedMapImpl();
+		data.add("idusuario", id.toString());
+		
+		ClientResponse delete = resource.delete(ClientResponse.class, data);
+		
+		return delete.getStatus() == 200 ? true : false;
 	}
 
 }

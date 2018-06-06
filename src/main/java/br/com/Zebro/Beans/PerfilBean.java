@@ -73,6 +73,8 @@ public class PerfilBean implements Serializable{
 	private UploadedFile terImage;
 	private UploadedFile quatImage;
 	private UploadedFile quinImage;
+
+	private String logoffmessage = "Logoff efetuado com sucesso!";
 	
 	@PostConstruct
 	public void init() {
@@ -242,6 +244,15 @@ public class PerfilBean implements Serializable{
 		solicitacoes.remove(u);
 	}
 	
+	public void deleteAccount() {
+		this.logoffmessage = "Conta deletada com sucesso";
+		boolean deleteAccount = this.usuarioService.deleteAccount(this.usuario.getIdusuario());
+		
+		if (deleteAccount) logoff();
+		else context.addMessage(null, new FacesMessage("Não foi possível deletar sua conta.\nTente mais tarde!"));
+		
+	}
+	
 	public void removeFriend(Usuario u) {
 		amigos.remove(u);
 		contatoService.deleteUserFriend(u.getIdcontato());
@@ -250,7 +261,7 @@ public class PerfilBean implements Serializable{
 	public void logoff() {
 		context.getExternalContext().getSessionMap().remove("usuario");
 		try {
-			context.addMessage(null, new FacesMessage("Logoff efetuado com sucesso!"));
+			context.addMessage(null, new FacesMessage(this.logoffmessage ));
 			context.getExternalContext().getFlash().setKeepMessages(true);
 			context.getExternalContext().redirect("index.xhtml");
 		} catch (IOException e) {

@@ -166,7 +166,7 @@ public class AuthSpotifyBean implements Serializable {
 		sessionMap.put("usuario", fromJson);
 
 		try {
-			context.getExternalContext().redirect("/Zebro/perfil");
+			context.getExternalContext().redirect("/Zebro/pessoas");
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}

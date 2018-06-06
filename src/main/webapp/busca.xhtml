@@ -5,7 +5,8 @@
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
-	xmlns:p="http://primefaces.org/ui" xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
 	xmlns:html="http://xmlns.jcp.org/jsf/passthrough"
 	xmlns:c="http://java.sun.com/jsp/jstl/core">
 
@@ -127,23 +128,27 @@
 								class="d-flex flex-column justify-content-around text-center height100">
 
 								<h3 style="margin-bottom: 1rem;" class="d-flex flex-column">
-									<h:outputText
-										value="#{buscaBean.usuario.nome}, #{buscaBean.usuario.idade}" />
-									<span style="font-size: 0.5em;"> <h:outputText
-											value="#{buscaBean.usuario.distance} Km"
-											rendered="#{buscaBean.usuario.distance > 0}" /> <h:outputText
-											value="Menos de um quilometro"
-											rendered="#{buscaBean.usuario.distance == 0}" />
+									<h:outputText value="#{buscaBean.usuario.nome}, #{buscaBean.usuario.idade}" 
+										rendered="#{buscaBean.usuario.nome != null}"/>
+									
+									<h:outputText value="Nome, Idade" rendered="#{buscaBean.usuario.nome == null}"/>
+									
+									<span style="font-size: 0.5em;"> 
+										<h:outputText value="#{buscaBean.usuario.distance} Km" rendered="#{buscaBean.usuario.distance > 0}" /> 
+										<h:outputText value="Menos de um quilometro" rendered="#{buscaBean.usuario.distance == 0}" />
 									</span>
 								</h3>
 
-								<div class="container" data-toggle="modal"
+								<div class="container" data-toggle="modal" jsf:rendered="#{buscaBean.usuario.nome != null}"
 									data-target="#profileModal" style="cursor: pointer;">
 									<h:graphicImage alt="Foto de Perfil"
 										url="#{buscaBean.usuario.fotousuario}" styleClass="imageView"
 										style="margin: 0 auto;" />
 								</div>
-
+								<h:graphicImage alt="Foto de Perfil" rendered="#{buscaBean.usuario.nome == null}"
+										url="#{buscaBean.usuario.fotousuario}" styleClass="imageView"
+										style="margin: 0 auto;" />
+				
 								<h:panelGrid columns="1" cellpadding="4"
 									styleClass="text-left tableInfo">
 
@@ -152,7 +157,7 @@
 
 								</h:panelGrid>
 
-								<div class="d-flex flex-row justify-content-around">
+								<div class="d-flex flex-row justify-content-around" jsf:rendered="#{buscaBean.usuario.nome != null}">
 									<p:commandButton styleClass="btn btn-outline-light"
 										update="@form :mainContainer dataGrid" value="Ignorar"
 										action="#{buscaBean.ignoreUser(buscaBean.usuario)}" />
@@ -161,7 +166,8 @@
 										action="#{buscaBean.sendRequest(buscaBean.usuario)}"
 										onclick="sendRequest()" />
 								</div>
-
+								<div jsf:rendered="#{buscaBean.usuario.nome == null}"></div>
+	
 							</div>
 
 							<div class="modal fade" id="profileModal" tabindex="-1"
