@@ -5,8 +5,7 @@
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
-	xmlns:p="http://primefaces.org/ui" 
-	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:p="http://primefaces.org/ui" xmlns:jsf="http://xmlns.jcp.org/jsf"
 	xmlns:html="http://xmlns.jcp.org/jsf/passthrough"
 	xmlns:c="http://java.sun.com/jsp/jstl/core">
 
@@ -21,8 +20,7 @@
 	<ui:param name="0" value="active" />
 	<ui:param name="talkParam" value="true" />
 	<ui:param name="friendsBean" value="#{buscaBean.lastFriends}" />
-	<ui:param name="setUsuarioChat"
-		value="#{buscaBean.setUsuarioChat(user)}" />
+	<ui:param name="setUsuarioChat" value="#{buscaBean.setUsuarioChat(user)}" />
 
 	<ui:define name="conteudo">
 		<script>
@@ -39,7 +37,7 @@
 			chat.send(JSON.stringify(mensagem));
 			setInterval(function() {
 				chat.send(JSON.stringify("{ping:'ping'}"));
-			},20000)
+			},2000)
 		}
 	
 		chat.onmessage = function (message){
@@ -111,14 +109,16 @@
 			<h:form id="manyViewMode" layout="block"
 				styleClass="height100 width100">
 
-				<p:remoteCommand name="changeOrderList" actionListener="#{buscaBean.changeOrderList()}" 
-					update="stackFriends"/>
+				<p:remoteCommand name="changeOrderList"
+					actionListener="#{buscaBean.changeOrderList()}"
+					update="stackFriends" />
 				<p:remoteCommand actionListener="#{buscaBean.plusCount()}"
 					name="plusCount" update=":mainContainer @form" />
 				<p:remoteCommand actionListener="#{buscaBean.chatboxFirst()}"
-					name="chatboxFirst" update="stackFriends @form:chatbox:dataListMessages 
+					name="chatboxFirst"
+					update="stackFriends @form:chatbox:dataListMessages 
 					@form:chatbox:headerChatbox @form:chatbox:scripts" />
-				
+
 
 				<div class="ui-g-3 height100 noPadding">
 					<div class="d-flex flex-row height100 width100">
@@ -128,27 +128,33 @@
 								class="d-flex flex-column justify-content-around text-center height100">
 
 								<h3 style="margin-bottom: 1rem;" class="d-flex flex-column">
-									<h:outputText value="#{buscaBean.usuario.nome}, #{buscaBean.usuario.idade}" 
-										rendered="#{buscaBean.usuario.nome != null}"/>
-									
-									<h:outputText value="Nome, Idade" rendered="#{buscaBean.usuario.nome == null}"/>
-									
-									<span style="font-size: 0.5em;"> 
-										<h:outputText value="#{buscaBean.usuario.distance} Km" rendered="#{buscaBean.usuario.distance > 0}" /> 
-										<h:outputText value="Menos de um quilometro" rendered="#{buscaBean.usuario.distance == 0}" />
+									<h:outputText
+										value="#{buscaBean.usuario.nome}, #{buscaBean.usuario.idade}"
+										rendered="#{buscaBean.usuario.nome != null}" />
+
+									<h:outputText value="Nome, Idade"
+										rendered="#{buscaBean.usuario.nome == null}" />
+
+									<span style="font-size: 0.5em;"> <h:outputText
+											value="#{buscaBean.usuario.distance} Km"
+											rendered="#{buscaBean.usuario.distance > 0}" /> <h:outputText
+											value="Menos de um quilometro"
+											rendered="#{buscaBean.usuario.distance == 0}" />
 									</span>
 								</h3>
 
-								<div class="container" data-toggle="modal" jsf:rendered="#{buscaBean.usuario.nome != null}"
+								<div class="container" data-toggle="modal"
+									jsf:rendered="#{buscaBean.usuario.nome != null}"
 									data-target="#profileModal" style="cursor: pointer;">
 									<h:graphicImage alt="Foto de Perfil"
 										url="#{buscaBean.usuario.fotousuario}" styleClass="imageView"
 										style="margin: 0 auto;" />
 								</div>
-								<h:graphicImage alt="Foto de Perfil" rendered="#{buscaBean.usuario.nome == null}"
-										url="#{buscaBean.usuario.fotousuario}" styleClass="imageView"
-										style="margin: 0 auto;" />
-				
+								<h:graphicImage alt="Foto de Perfil"
+									rendered="#{buscaBean.usuario.nome == null}"
+									url="#{buscaBean.usuario.fotousuario}" styleClass="imageView"
+									style="margin: 0 auto;" />
+
 								<h:panelGrid columns="1" cellpadding="4"
 									styleClass="text-left tableInfo">
 
@@ -157,7 +163,8 @@
 
 								</h:panelGrid>
 
-								<div class="d-flex flex-row justify-content-around" jsf:rendered="#{buscaBean.usuario.nome != null}">
+								<div class="d-flex flex-row justify-content-around"
+									jsf:rendered="#{buscaBean.usuario.nome != null}">
 									<p:commandButton styleClass="btn btn-outline-light"
 										update="@form :mainContainer dataGrid" value="Ignorar"
 										action="#{buscaBean.ignoreUser(buscaBean.usuario)}" />
@@ -167,7 +174,7 @@
 										onclick="sendRequest()" />
 								</div>
 								<div jsf:rendered="#{buscaBean.usuario.nome == null}"></div>
-	
+
 							</div>
 
 							<div class="modal fade" id="profileModal" tabindex="-1"
@@ -229,7 +236,8 @@
 														<div class="carousel-inner">
 
 															<div class="carousel-item active">
-																<h:graphicImage url="#{buscaBean.usuario.fotousuario}"
+																<h:graphicImage
+																	url="#{buscaBean.usuario.fotousuario}"
 																	styleClass="d-block w-100"
 																	style="border: .1em solid black; height: 380px;" />
 															</div>
@@ -242,7 +250,8 @@
 															</div>
 															<div class="carousel-item"
 																jsf:rendered="#{buscaBean.usuario.fototerciaria.isEmpty() == false}">
-																<h:graphicImage url="#{buscaBean.usuario.fototerciaria}"
+																<h:graphicImage
+																	url="#{buscaBean.usuario.fototerciaria}"
 																	styleClass="d-block w-100"
 																	style="border: .1em solid black; height: 380px;" />
 															</div>
@@ -274,7 +283,6 @@
 														</div>
 
 													</div>
-
 												</div>
 
 												<div class="ui-g-4">
@@ -284,7 +292,7 @@
 															<h:graphicImage
 																url="#{buscaBean.music.album.images[0].url}"
 																styleClass="imageMusic" />
-															<h:panelGroup layout="block" id="play">
+															<h:panelGroup layout="block" id="play" styleClass="playMusic">
 																<button onclick="playMusic()" class="playButton">
 																	<i class="fa fa-play"></i>
 																</button>
@@ -348,26 +356,31 @@
 
 					<h:inputHidden id="distance" value="#{buscaBean.distance}" />
 					<h:inputHidden id="txt6" />
-					
-					  <div class="dropdownDistance d-flex flex-row dropleft">
-					  
+
+					<div class="dropdownDistance d-flex flex-row dropleft">
+
 						<button type="button" class="btn btn-link" style="color: #FFF;"
 							aria-haspopup="true" aria-expanded="false">
 							<i class="fa fa-arrows-h"></i>
 						</button>
 
-					  	<h:panelGrid columns="1" style="margin-bottom: 10px; margin-left: 10px; ">
-					        <h:outputText id="displayRange" value="Selecione uma distância para busca de pessoas" />
-					        <p:slider for="txt6,distance" maxValue="200" minValue="0"  displayTemplate="Buscando pessoas com até {max} Km de distância" display="displayRange" style="width: 400px" range="true">
-					        	<p:ajax listener="#{buscaBean.onSlideEnd}" event="slideEnd" update="peopleView displayShowPeople"/>
-					        </p:slider>
-					    </h:panelGrid> 	
-					  
-					    
-					  </div>
-					
+						<h:panelGrid columns="1"
+							style="margin-bottom: 10px; margin-left: 10px; ">
+							<h:outputText id="displayRange"
+								value="Selecione uma distância para busca de pessoas" />
+							<p:slider for="txt6,distance" maxValue="200" minValue="0"
+								displayTemplate="Buscando pessoas com até {max} Km de distância"
+								display="displayRange" style="width: 400px" range="true">
+								<p:ajax listener="#{buscaBean.onSlideEnd}" event="slideEnd"
+									update="peopleView displayShowPeople" />
+							</p:slider>
+						</h:panelGrid>
+
+
+					</div>
+
 					<h:panelGroup layout="block" id="peopleView" styleClass="height100">
-						
+
 						<p:dataGrid var="u" value="#{buscaBean.usuarios}"
 							widgetVar="dataGridFriends" columns="3" layout="grid" rows="6"
 							paginator="true" paginatorPosition="bottom"
@@ -387,25 +400,29 @@
 							</div>
 						</p:dataGrid>
 					</h:panelGroup>
-					
-					
+
+
 					<h:panelGroup id="chatbox" layout="block">
-						<div id="chatbox" class="col-sm-3 col-sm-offset-4 frame chatbox collapse">
-						<h:panelGroup styleClass="text-center headerChatbox" layout="block" id="headerChatbox">
-							<h5>#{buscaBean.usuarioChat.nome}</h5>
-							<button type="button" class="close" onclick="hideCollapse()" aria-label="Close">
-					          <span aria-hidden="true">&times;</span>
-					        </button>
-				        </h:panelGroup>
-						<hr style="background-color: #FFF;" />
-						<h:panelGroup id="dataListMessages" layout="block" style="height: 200px;">
-							<ul class="listChatBox" >
-								<p:dataList value="#{buscaBean.friendsMessage}" var="message"> 
-									<h:panelGroup style="width: 100%;"
+						<div id="chatbox"
+							class="col-sm-3 col-sm-offset-4 frame chatbox collapse">
+							<h:panelGroup styleClass="text-center headerChatbox"
+								layout="block" id="headerChatbox">
+								<h5>#{buscaBean.usuarioChat.nome}</h5>
+								<button type="button" class="close" onclick="hideCollapse()"
+									aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</h:panelGroup>
+							<hr style="background-color: #FFF;" />
+							<h:panelGroup id="dataListMessages" layout="block"
+								style="height: 200px;">
+								<ul class="listChatBox">
+									<p:dataList value="#{buscaBean.friendsMessage}" var="message">
+										<h:panelGroup style="width: 100%;"
 											rendered="#{message.fkusuariosend == buscaBean.usuarioChat.idusuario}">
-										<div class="msj-rta macro">
+											<div class="msj-rta macro">
 												<div class="text text-r">
-													<p>#{message.msgText}</p>
+													<p style="word-wrap: break-word;">#{message.msgText}</p>
 													<p>
 														<small>#{message.msgData}</small>
 													</p>
@@ -416,41 +433,43 @@
 														src="#{buscaBean.u.fotousuario}" />
 												</div>
 											</div>
-									</h:panelGroup>
-									
-									<h:panelGroup style="width: 100%;"
-											rendered="#{message.fkusuariosend != buscaBean.usuarioChat.idusuario}">
-										<div class="msj macro">
-											<div class="avatar">
-												<img class="chatboxIcon" style="width: 100%;"
-													src="#{buscaBean.usuarioChat.fotousuario}" />
-											</div>
-											<div class="text text-l">
-												<p>#{message.msgText}</p>
-												<p>
-													<small>#{message.msgData}</small>
-												</p>
+										</h:panelGroup>
 
+										<h:panelGroup style="width: 100%;"
+											rendered="#{message.fkusuariosend != buscaBean.usuarioChat.idusuario}">
+											<div class="msj macro">
+												<div class="avatar">
+													<img class="chatboxIcon" style="width: 100%;"
+														src="#{buscaBean.usuarioChat.fotousuario}" />
+												</div>
+												<div class="text text-l">
+													<p style="word-wrap: break-word;">#{message.msgText}</p>
+													<p>
+														<small>#{message.msgData}</small>
+													</p>
+
+												</div>
 											</div>
-										</div>
-									</h:panelGroup>
-								
-								</p:dataList>
-						
-							</ul>
-						</h:panelGroup>
-							
+										</h:panelGroup>
+
+									</p:dataList>
+
+								</ul>
+							</h:panelGroup>
+
 							<div class="formDiv">
-								<div class="msj-rta macro text-center" style="width: 95%;margin-right: .45em;">
+								<div class="msj-rta macro text-center"
+									style="width: 95%; margin-right: .45em;">
 									<div class="text text-r">
 										<p:inputText styleClass="mytext textMessage"
-											placeholder="Digite sua mensagem" onkeypress="enterPress(event)"/>
+											placeholder="Digite sua mensagem"
+											onkeypress="enterPress(event)" />
 									</div>
 
 								</div>
 								<div class="buttonDivChatBox">
-									<p:commandButton icon="fa fa-send" styleClass="btn btn-link" type="submit"
-										onclick="sendMessage()" async="true"/>
+									<p:commandButton icon="fa fa-send" styleClass="btn btn-link"
+										type="submit" onclick="sendMessage()" async="true" />
 								</div>
 							</div>
 						</div>
@@ -500,7 +519,7 @@
 										                        '<div class="msj macro">' +
 										                        '<div class="avatar"><img class="chatboxIcon" style="width:100%;" src="#{buscaBean.usuarioChat.fotousuario}"/></div>' +
 										                            '<div class="text text-l">' +
-										                                '<p>'+ jsonData.msgtexto +'</p>' +
+										                                '<p style="word-wrap: break-word;">'+ jsonData.msgtexto +'</p>' +
 										                                '<p><small>'+jsonData.msgdata+'</small></p>' +
 										                            '</div>' +
 										                        '</div>' +
@@ -512,15 +531,16 @@
 												control = '<li style="width:95%;">' +
 										                        '<div class="msj-rta macro">' +
 										                            '<div class="text text-r">' +
-										                                '<p>'+jsonData.msgtexto+'</p>' +
+										                                '<p style="word-wrap: break-word;">'+jsonData.msgtexto+'</p>' +
 										                                '<p><small>'+jsonData.msgdata+'</small></p>' +
 										                            '</div>' +
 											                        '<div class="avatar" style="padding:0px 0px 0px 10px !important"><img class="chatboxIcon" style="width:100%;" src="#{buscaBean.u.fotousuario}" /></div>' +                                
 									                            '</div>' +
 										                  '</li>';
+										                  
 		
 										    }
-											
+											console.log(control)
 											var messageArea = $(".listChatBox");
 											messageArea.append(control).scrollTop(messageArea.prop('scrollHeight'));
 										
@@ -537,48 +557,55 @@
 									}else{
 										
 										$.when(chatboxFirst()).done(function (){
-											
-											control = '<li style="width:100%">' +
-						                        '<div class="msj macro">' +
-						                        '<div class="avatar"><img class="chatboxIcon" style="width:100%;" src="#{buscaBean.usuarioChat.fotousuario}"/></div>' +
-						                            '<div class="text text-l">' +
-						                                '<p>'+ jsonData.msgtexto +'</p>' +
-						                                '<p><small>'+jsonData.msgdata+'</small></p>' +
-						                            '</div>' +
-						                        '</div>' +
-						                        
-						                    '</li>';
-						                    
+											showChatbox();		
+											setTimeout(function () {
+												
 											var messageArea = $(".listChatBox");
-											messageArea.append(control).scrollTop(messageArea.prop('scrollHeight'));
-											setTimeout(function (){
-												showChatbox();												
-											},500)
+											
+												control = '<li style="width:100%">' +
+							                        '<div class="msj macro">' +
+							                        '<div class="avatar"><img class="chatboxIcon" style="width:100%;" src="#{buscaBean.usuarioChat.fotousuario}"/></div>' +
+							                            '<div class="text text-l">' +
+							                                '<p style="word-wrap: break-word;">'+ jsonData.msgtexto +'</p>' +
+							                                '<p><small>'+jsonData.msgdata+'</small></p>' +
+							                            '</div>' +
+							                        '</div>' +
+							                        
+							                    '</li>';
+							                    
+							                    console.log(control)
+												messageArea.append(control)
+												messageArea.scrollTop(messageArea.prop('scrollHeight'));
+											}, 800)
+						                    
 										})
 									}
 									
 								}
-							</script>	
+							</script>
 							<h:outputScript library="js" name="scroller.js" />
 						</h:panelGroup>
-							
+
 					</h:panelGroup>
 				</div>
-		
-				<p:stack icon="/resources/img/icons/messageIcon.png" id="stackFriends">
+
+				<p:stack icon="/resources/img/icons/messageIcon.png"
+					id="stackFriends">
 					<c:forEach items="#{buscaBean.lastFriends}" var="user" begin="0"
 						end="4">
-						<p:menuitem value="#{user.principalName}" styleClass="menuitem" ajax="true" async="true"
-							onclick="showChatbox() " action="#{buscaBean.setUsuarioChat(user)}" 
-							icon="#{user.fotousuario}" update="@form:chatbox:dataListMessages @form:chatbox:headerChatbox @form:chatbox:scripts"/>
+						<p:menuitem value="#{user.principalName}" styleClass="menuitem"
+							ajax="true" async="true" onclick="showChatbox() "
+							action="#{buscaBean.setUsuarioChat(user)}"
+							icon="#{user.fotousuario}"
+							update="@form:chatbox:dataListMessages @form:chatbox:headerChatbox @form:chatbox:scripts" />
 					</c:forEach>
 				</p:stack>
 
 			</h:form>
 
 		</h:panelGroup>
-		
-		
+
+
 
 	</ui:define>
 

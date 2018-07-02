@@ -12,9 +12,9 @@
 <ui:composition template="_template.xhtml">
 	<ui:define name="tituloPag"> Zebro - Conversas </ui:define>
 
-	<ui:param name="conversas" value="active"/>
-	<ui:param name="count" value="#{conversasBean.count}"/>
-	
+	<ui:param name="conversas" value="active" />
+	<ui:param name="count" value="#{conversasBean.count}" />
+
 	<ui:define name="socket">
 		<script>
 
@@ -28,11 +28,8 @@
 						}
 					console.log(mensagem);
 					chat.send(JSON.stringify(mensagem));
-					setInterval(function() {
-						chat.send(JSON.stringify("{ping:'ping'}"));
-					},20000)
 				}
-	
+
 				chat.onmessage = function (message){
 					var jsonData = JSON.parse(message.data);
 					console.log(jsonData);
@@ -79,87 +76,112 @@
 		</script>
 	</ui:define>
 	<ui:define name="conteudo">
-		<p:growl widgetVar="messageCame" life="3000"/>
-			<h:form onsubmit="sendMessage()">
-				<p:remoteCommand name="plusCount" actionListener="#{conversasBean.plusCount()}"/>
-				<p:remoteCommand name="changeOrderList" actionListener="#{conversasBean.changeOrderList}" update="dataTableFriends"/>
-				<div class="ui-g telaRelativa overflow-y-none" >
-				
-					<div class="dataFriendsShow d-flex flex-column ui-g-3">
-					
-						<div class="container d-flex flex-row justify-content-around align-items-center paddingAltura">
-							
-							<h:graphicImage url="#{conversasBean.mainUser.fotousuario}" styleClass="imageIcon"/>
-							
-							<h3 style="color: white;">#{conversasBean.mainUser.nome}</h3>
-							
-						</div>
-						<p:dataTable var="u" value="#{conversasBean.amigos}" emptyMessage="Nenhum amigo encontrado"
-							filteredValue="#{conversasBean.filterFriends}" id="dataTableFriends" 
-							 tableStyleClass="noBorder tableShowFriends" scrollable="true" widgetVar="friendsTable">
-						
-							<p:column filterBy="#{u.nome}" filterMatchMode="contains"  filterStyleClass="form-control" >
-								<div class="d-flex flex-row align-items-center" >
-									<p:commandLink action="#{conversasBean.setSelectedUser(u)}" update="@form:messageArea" styleClass="link">
-							            <h:graphicImage url="#{u.fotousuario}" styleClass="imageIcon"/>
-							            <h:outputText value="#{u.nome}" styleClass="marginLeftColorWhite"/>
-							            <h:inputHidden value="#{u.idusuario}" id="idusuario" />
-									</p:commandLink>
-						            
-					            </div>
-					        </p:column>
-							
-						</p:dataTable>
-						
+		<p:growl widgetVar="messageCame" life="3000" />
+		<h:form onsubmit="sendMessage()">
+			<p:remoteCommand name="plusCount"
+				actionListener="#{conversasBean.plusCount()}" />
+			<p:remoteCommand name="changeOrderList"
+				actionListener="#{conversasBean.changeOrderList}"
+				update="dataTableFriends" />
+			<div class="ui-g telaRelativa overflow-y-none">
+
+				<div class="dataFriendsShow d-flex flex-column ui-g-3">
+
+					<div
+						class="container d-flex flex-row justify-content-around align-items-center paddingAltura">
+
+						<h:graphicImage url="#{conversasBean.mainUser.fotousuario}"
+							styleClass="imageIcon" />
+
+						<h3 style="color: white;">#{conversasBean.mainUser.nome}</h3>
+
 					</div>
-				
-					<h:panelGroup class="d-flex flex-column w100 ui-g-9" id="messageArea" layout="block">
-					
-						<div class="selectedTalk">
-							
-							<div class="container d-flex flex-row align-items-center justify-content-around">
-								<div></div>
-								<div class="d-flex flex-row align-items-center" jsf:rendered="#{conversasBean.selectedUser.fotousuario.isEmpty() == false}">
-									<h:graphicImage url="#{conversasBean.selectedUser.fotousuario}" styleClass="imageIcon"/>
-									<h3 style="margin-left: 1rem">#{conversasBean.selectedUser.nome}</h3>
+					<p:dataTable var="u" value="#{conversasBean.amigos}"
+						emptyMessage="Nenhum amigo encontrado"
+						filteredValue="#{conversasBean.filterFriends}"
+						id="dataTableFriends" tableStyleClass="noBorder tableShowFriends"
+						scrollable="true" widgetVar="friendsTable">
+
+						<p:column filterBy="#{u.nome}" filterMatchMode="contains"
+							filterStyleClass="form-control">
+							<div class="d-flex flex-row align-items-center">
+								<p:commandLink action="#{conversasBean.setSelectedUser(u)}"
+									update="@form:messageArea" styleClass="link">
+									<h:graphicImage url="#{u.fotousuario}" styleClass="imageIcon" />
+									<h:outputText value="#{u.nome}"
+										styleClass="marginLeftColorWhite" />
+									<h:inputHidden value="#{u.idusuario}" id="idusuario" />
+								</p:commandLink>
+
+							</div>
+						</p:column>
+
+					</p:dataTable>
+
+				</div>
+
+				<h:panelGroup class="d-flex flex-column w100 ui-g-9"
+					id="messageArea" layout="block">
+
+					<div class="selectedTalk">
+
+						<div
+							class="container d-flex flex-row align-items-center justify-content-around">
+							<div></div>
+							<div class="d-flex flex-row align-items-center"
+								jsf:rendered="#{conversasBean.selectedUser.fotousuario.isEmpty() == false}">
+								<h:graphicImage url="#{conversasBean.selectedUser.fotousuario}"
+									styleClass="imageIcon" />
+								<h3 style="margin-left: 1rem">#{conversasBean.selectedUser.nome}</h3>
+							</div>
+							<div></div>
+						</div>
+
+					</div>
+
+					<div class="messageArea">
+
+						<div class="message w100">
+							<p:dataList value="#{conversasBean.messages}" var="m"
+								type="definition" emptyMessage=" ">
+								<div class="mensagem" id="messages">
+									<h:panelGroup layout="block"
+										rendered="#{m.fkusuariosend != conversasBean.mainUser.idusuario}"
+										styleClass="mensagemEnviada d-flex flex-column">
+										<span>#{m.msgText}</span>
+										<h:outputText value="#{m.msgData}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block"
+										rendered="#{m.fkusuariosend == conversasBean.mainUser.idusuario}"
+										styleClass="mensagemRecebida d-flex flex-column">
+										<span>#{m.msgText}</span>
+										<h:outputText value="#{m.msgData}" />
+									</h:panelGroup>
 								</div>
-								<div></div>
-							</div>
-							
+
+							</p:dataList>
+
 						</div>
-					
-						<div class="messageArea">
-							
-							<div class="message w100">
-								<p:dataList value="#{conversasBean.messages}" var="m" type="definition">
-									<div class="mensagem" id="messages">
-										<h:panelGroup layout="block" rendered="#{m.fkusuariosend != conversasBean.mainUser.idusuario}" 
-													styleClass="mensagemEnviada d-flex flex-column">
-											<span>#{m.msgText}</span>
-											<h:outputText value="#{m.msgData}"/>
-										</h:panelGroup>
-										<h:panelGroup layout="block" rendered="#{m.fkusuariosend == conversasBean.mainUser.idusuario}" 
-													styleClass="mensagemRecebida d-flex flex-column">
-											<span>#{m.msgText}</span>
-											<h:outputText value="#{m.msgData}"/>
-										</h:panelGroup>
-									</div>
-						        	
-						    	</p:dataList>
-						    	
-							</div>
-							
-						</div>
-											
-						<div class="inputArea d-flex flex-row">
-							<p:inputText styleClass="form-control textareaMessage textMessage" placeholder="Escreva aqui sua mensagem..." 
-									value="#{conversasBean.mensagem.msgText}"/>
-							<p:commandButton value="Send" styleClass="btn btn-outline-dark" type="submit" onclick="sendMessage()" update="@form:dataTableFriends"/>
-						</div>
-						
-						<h:outputScript library="js" name="scroller.js"/>
-				    	<script>
+
+					</div>
+
+					<div class="inputArea d-flex flex-row">
+						<p:inputText styleClass="form-control textareaMessage textMessage"
+							placeholder="Escreva aqui sua mensagem..."
+							value="#{conversasBean.mensagem.msgText}" />
+						<p:commandButton value="Send" styleClass="btn btn-outline-dark"
+							type="submit" onclick="sendMessage()"
+							update="@form:dataTableFriends" />
+					</div>
+
+					<h:outputScript library="js" name="scroller.js" />
+					<script>
 						    		
+				    	setInterval(function() {
+							chat.send(JSON.stringify("{ping:'pong'}"));
+							console.log("eita")
+						},2000)
+				    	
 									function sendMessage(){
 										var msgCome = document.querySelector(".textMessage");
 										var mensagem = 
@@ -180,7 +202,6 @@
 									}
 									
 									function appendMessage(jsonData){
-										
 										
 										
 										if (jsonData.fkcontato == #{conversasBean.selectedUser.idcontato}) {										
@@ -232,13 +253,13 @@
 									}
 								
 								</script>
-					</h:panelGroup>
-				
-				</div>
-				
-				
-			</h:form>
-				
+				</h:panelGroup>
+
+			</div>
+
+
+		</h:form>
+
 	</ui:define>
 
 </ui:composition>

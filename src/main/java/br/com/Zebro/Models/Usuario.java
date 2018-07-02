@@ -8,6 +8,10 @@ import java.util.Set;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
+import com.wrapper.spotify.model_objects.specification.Artist;
+import com.wrapper.spotify.model_objects.specification.Track;
+
+import br.com.Zebro.Utils.SpotifyUtils;
 
 public class Usuario {
 
@@ -39,6 +43,7 @@ public class Usuario {
 	private String distance;
 
 	private Calendar calendarnascusuario = Calendar.getInstance();
+	SpotifyUtils utils = new SpotifyUtils();
 	
 
 	public String getNome() {
@@ -85,7 +90,15 @@ public class Usuario {
 			return null;
 		}
 	}
-
+		
+	public Track getSpotifyMusic() {
+		return utils.getTrackById(this.musfavusuario);
+	}
+	
+	public List<Artist> getSpotifyArtists(){
+		return utils.getSeveralArtistsById(this.favoriteArtist); 
+	}
+	
 	public String getSpotifyid() {
 		return spotifyid;
 	}
@@ -177,7 +190,7 @@ public class Usuario {
 		if (this.fotousuario != null) {
 			return fotousuario;			
 		}else {
-			return "http://res.cloudinary.com/dkpphc5ei/image/upload/v1524159765/sf85eco0zbzuibv7ebhm.jpg";
+			return "http://res.cloudinary.com/dkpphc5ei/image/upload/v1528294914/user.png";
 		}
 	}
 

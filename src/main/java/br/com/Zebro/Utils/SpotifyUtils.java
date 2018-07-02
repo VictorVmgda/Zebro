@@ -241,7 +241,7 @@ public class SpotifyUtils implements Serializable{
 	public List<Artist> getRelevantArtists(){
 		List<Artist> artistas = new ArrayList<>();
 		
-		GetUsersTopArtistsRequest topuser = api.getUsersTopArtists().time_range("long_term").limit(20).offset(0).build();		
+		GetUsersTopArtistsRequest topuser = api.getUsersTopArtists().time_range("medium_term").limit(5).offset(0).build();		
 		try {
 			Artist[] artists = topuser.execute().getItems();
 			for (Artist artist : artists) {

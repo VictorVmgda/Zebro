@@ -20,7 +20,7 @@
 	<h:outputStylesheet library="css" 	    name="conversas.css"/>
 	<h:outputStylesheet library="css" 	    name="cadastro.css"/>
 	<h:outputStylesheet library="css" 	    name="chatbox.css"/>
-	<h:outputStylesheet library="css" 	    name="perfil.css" rendered="#{perfil}"/>
+	<h:outputStylesheet library="css" 	    name="perfil.css" rendered="#{perfilCss}"/>
 	<ui:insert name="theme"></ui:insert>
 
 	<h:outputScript library="primefaces" name="jquery/jquery.js"/>
@@ -77,7 +77,7 @@
 					</li>
 				</ul>
 	
-				<div class="d-flex flex-row align-items-center" style="margin:0 1rem;">
+				<div class="d-flex flex-row align-items-center" style="margin:0 1rem;cursor: pointer" data-toggle="modal" data-target="#myProfileModal">
 					<h:graphicImage url="#{sessionScope.usuario.fotousuario}" styleClass="img-fluid imageIcon" />
 					<div id="nomeUsuarioData">
 					    <h:outputText value="#{sessionScope.usuario.nome}"/>
@@ -103,6 +103,118 @@
 	    </div>
 	  </div>
 	</div>
+
+	<div class="modal fade" id="myProfileModal" tabindex="-1"
+								role="dialog" aria-labelledby="profileModal" aria-hidden="true"
+								style="color: #000;">
+								<div class="modal-dialog" role="document">
+									<div class="modal-content">
+										<div
+											class="modal-header d-flex flex-row justify-content-between align-items-center">
+											<h3 class="modal-title text-center" id="exampleModalLabel">#{sessionScope.usuario.nome},
+												#{sessionScope.usuario.idade}</h3>
+											<div>
+												<span> <h:outputText
+														value="#{sessionScope.usuario.distance} Km"
+														rendered="#{sessionScope.usuario.distance > 0}" /> <h:outputText
+														value="Menos de um quilometro"
+														rendered="#{sessionScope.usuario.distance == 0}" />
+												</span>
+												<button type="button" class="close" data-dismiss="modal"
+													aria-label="Close">
+													<span aria-hidden="true">&times;</span>
+												</button>
+											</div>
+										</div>
+										<div class="modal-body width100 d-flex flex-column">
+
+											<div class="d-flex flex-row ui-g">
+
+												<div class="ui-g-4">
+													<div
+														class="container d-flex flex-column justify-content-around">
+														<p:repeat var="artist" value="#{sessionScope.usuario.spotifyArtists}">
+															<div class="container ui-g align-items-center">
+																<h:graphicImage url="#{artist.getImages()[0].getUrl()}"
+																	styleClass="imageArtist ui-g-3" />
+
+																<h4 class="ui-g-9 text-center">#{artist.name}</h4>
+															</div>
+														</p:repeat>
+													</div>
+												</div>
+
+												<div class="ui-g-4">
+													<div id="photoCarousel"
+														class="carousel slide height100 width100"
+														data-ride="carousel">
+														<ol class="carousel-indicators">
+															<li data-target="#photoCarousel" data-slide-to="0"
+																class="active"></li>
+														</ol>
+														<div class="carousel-inner">
+
+															<div class="carousel-item active">
+																<h:graphicImage
+																	url="#{sessionScope.usuario.fotousuario}"
+																	styleClass="d-block w-100"
+																	style="border: .1em solid black; height: 380px;" />
+															</div>
+
+															<a class="carousel-control-prev" href="#photoCarousel"
+																role="button" data-slide="prev"> <span
+																class="carousel-control-prev-icon" aria-hidden="true"></span>
+																<span class="sr-only">Previous</span>
+															</a> <a class="carousel-control-next" href="#photoCarousel"
+																role="button" data-slide="next"> <span
+																class="carousel-control-next-icon" aria-hidden="true"></span>
+																<span class="sr-only">Next</span>
+															</a>
+
+														</div>
+
+													</div>
+												</div>
+
+												<div class="ui-g-4">
+													<div class="height100 width100 d-flex flex-column">
+														<div class="container text-center">
+															<h4>Música Favorita:</h4>
+															<h:graphicImage
+																url="#{sessionScope.usuario.spotifyMusic.getAlbum().getImages()[0].getUrl()}"
+																styleClass="imageMusic" />
+															<h:panelGroup layout="block" id="play" styleClass="playMyMusic">
+																<button onclick="playMyMusic()" class="playButton">
+																	<i class="fa fa-play"></i>
+																</button>
+															</h:panelGroup>
+															<h6 style="margin-top: 1rem;">
+																	 #{sessionScope.usuario.spotifyMusic.name}
+																	- #{sessionScope.usuario.spotifyMusic.artists[0].name}
+																</h6>
+															<div class="text-center">
+																<h6 class="text-center">
+																	#{sessionScope.usuario.spotifyMusic.album.name}
+																</h6>
+															</div>
+															<audio id="myAudio"> 
+																<source src="#{sessionScope.usuario.spotifyMusic.previewUrl}"
+																type="audio/mp3" id="myaudiosource" /> </audio>
+														</div>
+														<div class="container">
+															<hr class="width100" />
+															<h:outputText value="#{sessionScope.usuario.desc}" />
+														</div>
+														<div></div>
+													</div>
+												</div>
+
+											</div>
+
+										</div>
+									</div>
+								</div>
+							</div>
 
 	<div class="margin-topH">
 	

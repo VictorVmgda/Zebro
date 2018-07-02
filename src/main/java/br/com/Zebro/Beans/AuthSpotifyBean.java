@@ -10,7 +10,6 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.faces.context.FacesContext;
@@ -93,9 +92,7 @@ public class AuthSpotifyBean implements Serializable {
 			// Get relevant artist from user
 			setRelevantArtists(spotifyUtil.getRelevantArtists());
 
-			if (getRelevantArtists().size() < 5) {
-				setNewAccount(true);
-			}
+			
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -119,8 +116,7 @@ public class AuthSpotifyBean implements Serializable {
 				e.printStackTrace();
 			}
 		} else {
-			usuario.setFotousuario(
-					"http://res.cloudinary.com/dkpphc5ei/image/upload/v1524174366/gheedahrkszsiil8yhli.png");
+			usuario.setFotousuario("http://res.cloudinary.com/dkpphc5ei/image/upload/v1524174366/gheedahrkszsiil8yhli.png");
 		}
 
 		if (!secImage.getFileName().isEmpty()) {
@@ -151,13 +147,10 @@ public class AuthSpotifyBean implements Serializable {
 			artistId.add(artist.getId());
 		}
 
-		if (usuario.getFavoriteArtist().size() == 0) {
-			usuario.setFavoriteArtist(artistId);
-			usuario.setFavoriteGen(spotifyUtil.addGenresIntoUser(this.selectedArtists));
-		} else {
-			Set<String> addGenresByArtistsId = spotifyUtil.addGenresByArtistsId(usuario.getFavoriteArtist());
-			usuario.setFavoriteGen(addGenresByArtistsId);
-		}
+		usuario.setFavoriteArtist(artistId);
+		usuario.setFavoriteGen(spotifyUtil.addGenresIntoUser(this.selectedArtists));
+
+		
 		System.out.println(usuario.toJson());
 		String postUser = zebroApi.postUser(usuario.toJson());
 

@@ -127,7 +127,7 @@ public class PerfilBean implements Serializable{
 		return spotifyUtils.getSeveralArtistsById(usuario.getFavoriteArtist());
 	}
 	
-	public void updateUserData() throws IOException {
+	public void updateUserData() {
 		
 		try {
 			if (this.usuario.getMusfavusuario() != track.getId() && track != null) 
@@ -135,29 +135,28 @@ public class PerfilBean implements Serializable{
 			
 			
 			if (!getPriImage().getFileName().isEmpty())
-				usuario.setFotousuario("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(getPriImage().getContents()));
+				usuario.setFotousuario("data:image/jpeg;base64," +Base64.getEncoder().encodeToString(this.priImage.getContents()));
 			
 			if (!getSecImage().getFileName().isEmpty()) 
-				usuario.setFotosecundaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(getSecImage().getContents()));
+				usuario.setFotosecundaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(this.secImage.getContents()));
 			
 			if (!getTerImage().getFileName().isEmpty()) 
-				usuario.setFototerciaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(getTerImage().getContents()));
+				usuario.setFototerciaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(this.terImage.getContents()));
 			
 			
 			if (!getQuatImage().getFileName().isEmpty()) 
-				usuario.setFotoquaternaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(getQuatImage().getContents()));
+				usuario.setFotoquaternaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(this.quatImage.getContents()));
 			
 			
 			if (!getQuinImage().getFileName().isEmpty()) 
-				usuario.setFotoquintenaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(getQuinImage().getContents()));
+				usuario.setFotoquintenaria("data:image/jpeg;base64,"+Base64.getEncoder().encodeToString(this.quinImage.getContents()));
 			
 			
 			Calendar data = usuario.getCalendarnascusuario();
 			usuario.setNascusuario(data.get(Calendar.YEAR) + "-" + (data.get(Calendar.MONTH) + 1) + "-" + data.get(Calendar.DAY_OF_MONTH));
 			
 			Usuario userData = new Usuario();				
-			if (this.getCheckedArtists().size() > 0) {
-				
+			try {
 				List<String> artistId = new ArrayList<>();
 				
 				checkedArtists.forEach((Artist art) -> artistId.add(art.getId()));
@@ -167,14 +166,11 @@ public class PerfilBean implements Serializable{
 				
 				userData = usuarioService.updateUserAndArtistData(this.usuario);
 				
-			} else if(this.checkedArtistsString.size() > 0){
+			}catch (Exception e) {
 				
-				this.usuario.setFavoriteArtist(checkedArtistsString);
-				this.usuario.setFavoriteGen(spotifyUtils.addGenresByArtistsId(checkedArtistsString));
+				userData = usuarioService.updateUserData(usuario);
 				
-				userData = usuarioService.updateUserAndArtistData(this.usuario);
-			
-			}else userData = usuarioService.updateUserData(usuario);
+			}
 			
 	
 			ExternalContext externalContext = context.getExternalContext();
@@ -183,6 +179,7 @@ public class PerfilBean implements Serializable{
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.out.println(e.getMessage() + "benis");
 		}
 		
 	}

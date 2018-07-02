@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -58,7 +59,14 @@ public class BuscaBean implements Serializable{
 		try {
 			
 			SpotifyUtils.refreshUser();
-			setU((Usuario) context.getExternalContext().getSessionMap().get("usuario"));
+			ExternalContext externalContext = context.getExternalContext();
+			setU((Usuario) externalContext.getSessionMap().get("usuario"));
+			
+			if (u.getIdusuario() == null) {
+				externalContext.getSessionMap().replace("usuario", this.u);
+				this.u.setIdusuario(usuarioService.getUserData(this.u.getSpotifyid()).getIdusuario());
+			}
+			
 			setCount(solicitacoesService.getRequestCount(u.getIdusuario()));
 			getUsers();
 			
@@ -78,7 +86,7 @@ public class BuscaBean implements Serializable{
 			context.addMessage(null, new FacesMessage("Sessão expirada"));
 			context.getExternalContext().getFlash().setKeepMessages(true);
 			try {
-				context.getExternalContext().redirect("index.xhtml");
+				context.getExternalContext().redirect("/Zebro/home");
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -158,7 +166,11 @@ public class BuscaBean implements Serializable{
 		setDistance((double) ev.getValue());
 		System.out.println(getDistance());
 		getUsers();
-		setUsuario(getUsuarios().get(0));
+		try {
+			setUsuario(getUsuarios().get(0));
+		}catch (Exception e) {
+			setUsuario(new Usuario());
+		}
 	}
 	
 	public void chatboxFirst() {
